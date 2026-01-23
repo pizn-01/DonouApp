@@ -5,6 +5,7 @@ import DashboardPage from './pages/dashboard/DashboardPage';
 import BriefsPage from './pages/briefs/BriefsPage';
 import BriefDetailsPage from './pages/briefs/BriefDetailsPage';
 import CreateBriefAIPage from './pages/briefs/CreateBriefAIPage';
+import CreateBriefPage from './pages/briefs/CreateBriefPage';
 import SettingsPage from './pages/settings/SettingsPage';
 import MessagesPage from './pages/messages/MessagesPage';
 
@@ -24,7 +25,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/briefs" element={<BriefsPage />} />
         <Route path="/briefs/create-ai" element={<CreateBriefAIPage />} />
-        <Route path="/briefs/create" element={<div>Manual Create (Coming)</div>} />
+        <Route path="/briefs/create" element={<CreateBriefPage />} />
         <Route path="/briefs/:id" element={<BriefDetailsPage />} />
 
         {/* Settings & Messages */}
