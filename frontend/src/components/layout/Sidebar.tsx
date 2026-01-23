@@ -7,6 +7,7 @@ import {
     Settings,
     LogOut
 } from "lucide-react";
+import logo from "@/assets/Group 1597890163 (3).png";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> { }
 
@@ -41,10 +42,7 @@ export function Sidebar({ className }: SidebarProps) {
             <div className="space-y-4 py-4">
                 <div className="px-6 py-2">
                     <Link to="/dashboard" className="flex items-center gap-2">
-                        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                            <span className="font-bold text-primary-foreground text-xl">D</span>
-                        </div>
-                        <span className="font-bold text-xl tracking-tight">DonauApp</span>
+                        <img src={logo} alt="Donau.ai Logo" className="h-10 w-auto" />
                     </Link>
                 </div>
                 <div className="px-3 py-2">

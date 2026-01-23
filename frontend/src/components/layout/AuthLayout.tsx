@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import logo from "@/assets/Group 1597890163 (3).png";
 
 interface AuthLayoutProps {
     children: ReactNode;
@@ -16,7 +17,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
             {/* Header */}
             <header className="absolute top-0 left-0 w-full p-6 flex justify-between items-center z-100">
                 <div className="flex items-center gap-2">
-                    <span className="font-bold text-2xl tracking-tight">donau_ai</span>
+                    <img src={logo} alt="Donau.ai Logo" className="h-8 w-auto" />
                 </div>
                 <div className="flex items-center gap-2">
                     <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-foreground">
