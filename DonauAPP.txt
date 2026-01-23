@@ -1,0 +1,150 @@
+DonauApp – MVP Design & Front-End Delivery 
+Proposal (Final) 
+1. Project Overview 
+DonauApp is an AI-powered B2B platform that connects brands with verified manufacturers 
+through intelligent brief creation, automated matching, and proposal-based collaboration. 
+The objective of this MVP is to validate the core workflow: 
+Brief Creation → Manufacturer Matching → Proposal & Collaboration 
+This proposal covers UI/UX design (Figma) and front-end development only, aligned with the 
+client’s Go-based, server-rendered architecture. 
+2. Scope of Work 
+A. UI/UX Design (Figma) 
+● High-fidelity desktop-first UI designs 
+● Brand and Manufacturer user flows 
+● Complete Tailwind Design System & reusable components 
+● High-fidelity Marketing Website UI (desktop) 
+● UX structured to support server-side rendering and templates 
+Important Note (Budget Alignment) 
+To optimize cost and timelines: 
+● Mobile-specific Figma designs are excluded 
+● Desktop designs will act as the single source of truth 
+● Responsiveness(Mobile) will be implemented during front-end development 
+B. Front-End Development (Responsive) 
+● Plain HTML + Tailwind CSS + JavaScript 
+● Fully responsive implementation (desktop, mobile) 
+● Server-rendering–friendly templates 
+● Component-based structure for reuse 
+● Responsive navigation, forms, grids, and tables 
+● Loading, empty, and error states 
+Technology Alignment ( no backend work just alignment) 
+● Go-based backend 
+● Template-based server-side rendering 
+● No SPA frameworks assumed 
+3. MVP Functional Coverage 
+A. Brand User Flows 
+● Onboarding & account setup 
+● AI-assisted and manual brief creation 
+● Manufacturer matching & comparison 
+● Proposal review, counter-offers, acceptance 
+● Messaging with AI chat assistant 
+B. Manufacturer User Flows 
+● Business verification & capability setup 
+● Brief review & filtering 
+● Proposal creation & submission 
+● Project pipeline & updates 
+● Messaging & AI assistance 
+C. Shared System Screens 
+● Authentication 
+● Notifications 
+● Account settings 
+● Error and empty states 
+4. Marketing Website (UI + Front-End) 
+● 4–5 pages (desktop UI design) 
+○ Home (Lead generation) 
+○ About 
+○ Services 
+○ Contact 
+○ Optional: Blog / FAQs 
+● Fully responsive front-end implementation 
+5. Estimated Screen Count (MVP) 
+Web App (Desktop UI Designs) 
+● Brand flows: 20–25 screens 
+● Manufacturer flows: 18–22 screens 
+● Shared screens: 5–6 screens 
+Total Web App: ~40–50 screens 
+Marketing Website 
+● 4–5 screens (desktop UI) 
+Grand Total: ~44–55 screens 
+6. Execution Strategy 
+● Week 1: Design-only phase (foundation & direction lock) 
+● Week 2 onward: Parallel execution 
+● UI/UX design remains one week ahead of development 
+● Responsive behavior handled during development phase 
+7. Timeline & Milestone Roadmap 
+Total Duration: 
+5–6 Weeks 
+(Extended beyond the original 4-week request to ensure quality and responsiveness) 
+Week 1 — UI/UX Design Foundation (Design Only) 
+Design 
+● UX flow finalization (Brand & Manufacturer) 
+● Information architecture 
+● Design system setup 
+● High-fidelity designs for: 
+○ Authentication 
+○ Onboarding 
+○ Core dashboard 
+Output 
+● Design direction approved 
+● Design system locked 
+● Ready for development kickoff 
+Week 2 — Core Product Flows (Parallel Starts) 
+Design 
+● Brief creation (AI + Manual) 
+● Matching & manufacturer cards 
+● Proposal workflows 
+● Messaging UI 
+Front-End 
+● Project setup (Tailwind, layouts, breakpoints) 
+● Global components 
+● Auth, onboarding, dashboard templates 
+● Initial responsive structure 
+Week 3 — Advanced Flows & Marketing Site 
+Design 
+● Manufacturer workflows 
+● Proposal submission 
+● Project pipeline 
+● Marketing website (desktop UI) 
+Front-End 
+● Brief creation & matching screens 
+● Proposal & messaging templates 
+● Responsive layouts for core workflows 
+● Marketing site implementation begins 
+Week 4 — Feature Completion 
+Design 
+● Notifications 
+● Settings 
+● Error & empty states 
+● Final UX refinements 
+● Figma documentation 
+Front-End 
+● Manufacturer flows 
+● Marketing site completion 
+● Mobile responsiveness 
+● UI consistency pass 
+Week 5 — Responsive QA & Polish 
+Design 
+● Minor refinements (if needed) 
+● Design support during QA 
+Front-End 
+● Full responsive QA 
+● Cross-browser testing 
+● Template cleanup 
+● Final polish 
+Optional Week 6 — Buffer (If Required) 
+● Client feedback iterations 
+● Minor scope adjustments 
+● Front-end support during backend integration 
+8. Final Deliverables 
+Design 
+● High-fidelity Figma files (desktop-first) 
+● Design system & components 
+● Annotated flows for handoff 
+Front-End 
+● Responsive HTML + Tailwind CSS + JS templates 
+● SSR-compatible structure 
+● Production-ready UI 
+9. Key Clarifications 
+● Mobile responsiveness is included 
+● Mobile Figma designs are excluded to stay within budget 
+● Desktop designs serve as the baseline 
+● Timeline includes buffer to reduce delivery risk
