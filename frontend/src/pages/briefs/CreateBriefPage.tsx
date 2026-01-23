@@ -4,7 +4,7 @@ import { ArrowLeft, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea"; // Assuming this creates/exists or I use standard textarea
+import { Textarea } from "../../components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useNavigate } from "react-router-dom";
@@ -30,6 +30,7 @@ export default function CreateBriefPage() {
 
     const onSubmit = async (_data: CreateBriefInput) => {
         setIsSubmitting(true);
+        console.log("Submitting:", _data);
         // Simulate API call
         try {
             await new Promise(resolve => setTimeout(resolve, 1500));

@@ -37,6 +37,7 @@ export default function CreateBriefAIPage() {
 
     const onSubmit = async (_data: GenerateBriefInput) => {
         setIsGenerating(true);
+        console.log(_data);
         try {
             await new Promise(resolve => setTimeout(resolve, 3000));
             navigate("/briefs");

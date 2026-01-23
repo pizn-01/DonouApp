@@ -18,44 +18,7 @@ import { BriefStatus, type Brief } from "@/features/briefs/types";
 import { cn } from "@/lib/utils";
 
 // Mock data (matches backend structure)
-const MOCK_BRIEFS: Brief[] = [
-    {
-        id: "1",
-        brandId: "brand-1",
-        title: "Premium Cotton T-Shirts Collection",
-        description: "Looking for high-quality cotton t-shirt manufacturing with specific GSM requirements for our Summer 2024 line. Need organic certifications.",
-        status: BriefStatus.ACTIVE,
-        category: "Apparel",
-        requirements: {
-            productType: "T-Shirt",
-            quantity: 5000,
-            specifications: ["100% Cotton", "GSM 180"],
-        },
-        budget: { min: 20000, max: 25000, currency: "USD" },
-        timeline: "3 months",
-        aiGenerated: false,
-        createdAt: "2024-01-15T10:00:00Z",
-        updatedAt: "2024-01-15T10:00:00Z",
-    },
-    {
-        id: "2",
-        brandId: "brand-1",
-        title: "Eco-Friendly Water Bottles",
-        description: "Stainless steel water bottles with custom engraving. Double-walled vacuum insulation required.",
-        status: BriefStatus.DRAFT,
-        category: "Accessories",
-        requirements: {
-            productType: "Water Bottle",
-            quantity: 1000,
-            specifications: ["Steel 304", "500ml"],
-        },
-        budget: { min: 5000, max: 8000, currency: "USD" },
-        timeline: "2 months",
-        aiGenerated: true,
-        createdAt: "2024-01-20T14:30:00Z",
-        updatedAt: "2024-01-20T14:30:00Z",
-    },
-];
+const MOCK_BRIEFS: Brief[] = [];
 
 const StatusBadge = ({ status }: { status: BriefStatus }) => {
     const styles = {
@@ -120,57 +83,75 @@ export default function BriefsPage() {
                 </div>
 
                 <div className="grid gap-4">
-                    {MOCK_BRIEFS.map((brief) => (
-                        <Card key={brief.id} className="group hover:shadow-md transition-all duration-200 border-muted hover:border-primary/20 cursor-pointer">
-                            <Link to={`/briefs/${brief.id}`} className="block">
-                                <CardContent className="p-6">
-                                    <div className="flex items-start justify-between">
-                                        <div className="space-y-3 flex-1">
-                                            <div className="flex items-center gap-3 flex-wrap">
-                                                <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors">
-                                                    {brief.title}
-                                                </h3>
-                                                <StatusBadge status={brief.status} />
-                                                {brief.aiGenerated && (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
-                                                        <Sparkles className="w-3 h-3 mr-1" />
-                                                        AI Generated
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <p className="text-muted-foreground line-clamp-2 max-w-3xl leading-relaxed">
-                                                {brief.description}
-                                            </p>
-
-                                            <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground pt-2">
-                                                <div className="flex items-center gap-2 bg-muted/40 px-2 py-1 rounded-md">
-                                                    <FileText className="h-4 w-4" />
-                                                    <span className="font-medium">{brief.category}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Calendar className="h-4 w-4" />
-                                                    <span>{brief.timeline}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <DollarSign className="h-4 w-4" />
-                                                    <span>${brief.budget.min.toLocaleString()} - {brief.budget.max.toLocaleString()}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex flex-col items-end gap-2 ml-4">
-                                            <Button variant="ghost" size="icon" className="hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <MoreVertical className="h-4 w-4" />
-                                            </Button>
-                                            <span className="text-xs text-muted-foreground mt-auto">
-                                                Updated {new Date(brief.updatedAt).toLocaleDateString()}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </CardContent>
+                    {MOCK_BRIEFS.length === 0 ? (
+                        <div className="text-center py-20 border rounded-lg bg-muted/10 border-dashed">
+                            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-4">
+                                <FileText className="h-6 w-6 text-muted-foreground" />
+                            </div>
+                            <h3 className="text-lg font-medium">No briefs yet</h3>
+                            <p className="text-muted-foreground mt-2 mb-6 max-w-sm mx-auto">
+                                Create your first manufacturing brief to start getting proposals from suppliers.
+                            </p>
+                            <Link to="/briefs/create">
+                                <Button>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Create First Brief
+                                </Button>
                             </Link>
-                        </Card>
-                    ))}
+                        </div>
+                    ) : (
+                        MOCK_BRIEFS.map((brief) => (
+                            <Card key={brief.id} className="group hover:shadow-md transition-all duration-200 border-muted hover:border-primary/20 cursor-pointer">
+                                <Link to={`/briefs/${brief.id}`} className="block">
+                                    <CardContent className="p-6">
+                                        <div className="flex items-start justify-between">
+                                            <div className="space-y-3 flex-1">
+                                                <div className="flex items-center gap-3 flex-wrap">
+                                                    <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors">
+                                                        {brief.title}
+                                                    </h3>
+                                                    <StatusBadge status={brief.status} />
+                                                    {brief.aiGenerated && (
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                                            <Sparkles className="w-3 h-3 mr-1" />
+                                                            AI Generated
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className="text-muted-foreground line-clamp-2 max-w-3xl leading-relaxed">
+                                                    {brief.description}
+                                                </p>
+
+                                                <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground pt-2">
+                                                    <div className="flex items-center gap-2 bg-muted/40 px-2 py-1 rounded-md">
+                                                        <FileText className="h-4 w-4" />
+                                                        <span className="font-medium">{brief.category}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Calendar className="h-4 w-4" />
+                                                        <span>{brief.timeline}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <DollarSign className="h-4 w-4" />
+                                                        <span>${brief.budget.min.toLocaleString()} - {brief.budget.max.toLocaleString()}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col items-end gap-2 ml-4">
+                                                <Button variant="ghost" size="icon" className="hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <MoreVertical className="h-4 w-4" />
+                                                </Button>
+                                                <span className="text-xs text-muted-foreground mt-auto">
+                                                    Updated {new Date(brief.updatedAt).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Link>
+                            </Card>
+                        ))
+                    )}
                 </div>
             </div>
         </DashboardLayout>

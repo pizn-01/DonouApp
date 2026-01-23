@@ -4,7 +4,10 @@ import { UserRole, VerificationStatus, BriefStatus, ProposalStatus, MatchStatus 
 export interface User {
     id: string;
     email: string;
+    firstName: string;
+    lastName: string;
     role: UserRole;
+    onboardingCompleted: boolean;
     emailVerified: boolean;
     createdAt: Date;
     updatedAt: Date;

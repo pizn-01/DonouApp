@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 const TABS = [
     { id: "account", label: "Account", icon: User },
@@ -15,7 +16,10 @@ const TABS = [
 ];
 
 export default function SettingsPage() {
+    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState("account");
+
+    if (!user) return null;
 
     return (
         <DashboardLayout>
@@ -61,7 +65,7 @@ export default function SettingsPage() {
                                             <div className="relative group cursor-pointer">
                                                 <div className="h-24 w-24 rounded-full bg-muted flex items-center justify-center text-3xl font-bold text-muted-foreground border-4 border-background shadow-lg overflow-hidden">
                                                     {/* Placeholder for avatar image */}
-                                                    <span className="group-hover:hidden">JD</span>
+                                                    <span className="group-hover:hidden">{user.firstName[0]}{user.lastName[0]}</span>
                                                     <Camera className="hidden group-hover:block h-8 w-8 text-muted-foreground" />
                                                 </div>
                                             </div>
@@ -75,15 +79,15 @@ export default function SettingsPage() {
                                         <div className="grid gap-6 md:grid-cols-2">
                                             <div className="space-y-2">
                                                 <Label htmlFor="firstName" className="text-base">First Name</Label>
-                                                <Input id="firstName" defaultValue="Jane" className="h-11" />
+                                                <Input id="firstName" defaultValue={user.firstName} className="h-11" />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="lastName" className="text-base">Last Name</Label>
-                                                <Input id="lastName" defaultValue="Doe" className="h-11" />
+                                                <Input id="lastName" defaultValue={user.lastName} className="h-11" />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="email" className="text-base">Email</Label>
-                                                <Input id="email" defaultValue="jane@example.com" disabled className="h-11 bg-muted/50" />
+                                                <Input id="email" defaultValue={user.email} disabled className="h-11 bg-muted/50" />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="phone" className="text-base">Phone Number</Label>

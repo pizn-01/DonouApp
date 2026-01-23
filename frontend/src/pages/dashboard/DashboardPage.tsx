@@ -7,35 +7,35 @@ import { Button } from "@/components/ui/button";
 const STATS = [
     {
         title: "Active Briefs",
-        value: "12",
-        change: "+2 from last month",
+        value: "0",
+        change: "Start your first project",
         icon: FileText,
-        trend: "up",
+        trend: "neutral",
         color: "text-blue-600",
         bg: "bg-blue-50"
     },
     {
         title: "Pending Proposals",
-        value: "4",
-        change: "Requires attention",
+        value: "0",
+        change: "No proposals yet",
         icon: Clock,
-        trend: "down",
+        trend: "neutral",
         color: "text-amber-600",
         bg: "bg-amber-50"
     },
     {
         title: "Active Matches",
-        value: "8",
-        change: "Across 3 projects",
+        value: "0",
+        change: "Based on requirements",
         icon: TrendingUp,
-        trend: "up",
+        trend: "neutral",
         color: "text-emerald-600",
         bg: "bg-emerald-50"
     },
     {
         title: "Completed Projects",
-        value: "24",
-        change: "Since joining",
+        value: "0",
+        change: "Lifetime total",
         icon: CheckCircle,
         trend: "neutral",
         color: "text-indigo-600",
@@ -90,24 +90,9 @@ export default function DashboardPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-6">
-                                {[1, 2, 3].map((i) => (
-                                    <div key={i} className="flex items-start gap-4 border-b pb-6 last:border-0 last:pb-0 group">
-                                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                                            <FileText className="h-5 w-5 text-primary" />
-                                        </div>
-                                        <div className="flex-1 space-y-1">
-                                            <p className="text-sm font-medium leading-none group-hover:text-primary transition-colors">
-                                                Brief "Sustainable Packaging" Updated
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                Added new material requirements for the eco-friendly line.
-                                            </p>
-                                            <p className="text-xs text-muted-foreground pt-1">
-                                                2 hours ago
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
+                                <div className="text-center py-6 text-muted-foreground text-sm">
+                                    No recent activity.
+                                </div>
                             </div>
                         </CardContent>
                     </Card>

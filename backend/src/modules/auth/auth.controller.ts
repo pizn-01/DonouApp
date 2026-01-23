@@ -41,7 +41,10 @@ export class AuthController {
             });
 
             sendSuccess(res, {
-                user: result.user,
+                user: {
+                    ...result.user,
+                    onboardingCompleted: result.onboardingCompleted,
+                },
                 profile: result.profile,
                 accessToken: result.session.accessToken,
                 expiresAt: result.session.expiresAt,
@@ -124,7 +127,13 @@ export class AuthController {
             }
 
             const result = await authService.getProfile(req.userId);
-            sendSuccess(res, result);
+            sendSuccess(res, {
+                ...result,
+                user: {
+                    ...result.user,
+                    onboardingCompleted: result.onboardingCompleted,
+                }
+            });
         } catch (error) {
             next(error);
         }

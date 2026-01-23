@@ -8,12 +8,14 @@ import CreateBriefAIPage from './pages/briefs/CreateBriefAIPage';
 import CreateBriefPage from './pages/briefs/CreateBriefPage';
 import SettingsPage from './pages/settings/SettingsPage';
 import MessagesPage from './pages/messages/MessagesPage';
+import OnboardingPage from './pages/onboarding/OnboardingPage';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/auth/login" replace />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
         {/* Auth Routes */}
         <Route path="/auth">
@@ -21,16 +23,75 @@ function App() {
           <Route path="register" element={<RegisterPage />} />
         </Route>
 
+        {/* Onboarding */}
+        <Route
+          path="/onboarding"
+          element={
+            <ProtectedRoute>
+              <OnboardingPage />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Dashboard Routes */}
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/briefs" element={<BriefsPage />} />
-        <Route path="/briefs/create-ai" element={<CreateBriefAIPage />} />
-        <Route path="/briefs/create" element={<CreateBriefPage />} />
-        <Route path="/briefs/:id" element={<BriefDetailsPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/briefs"
+          element={
+            <ProtectedRoute>
+              <BriefsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/briefs/create-ai"
+          element={
+            <ProtectedRoute>
+              <CreateBriefAIPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/briefs/create"
+          element={
+            <ProtectedRoute>
+              <CreateBriefPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/briefs/:id"
+          element={
+            <ProtectedRoute>
+              <BriefDetailsPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Settings & Messages */}
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/messages" element={<MessagesPage />} />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute>
+              <MessagesPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

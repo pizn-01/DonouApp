@@ -35,6 +35,7 @@ export interface User {
     lastName: string;
     role: "BRAND" | "MANUFACTURER" | "ADMIN";
     emailVerified: boolean;
+    onboardingCompleted: boolean;
 }
 
 export interface AuthResponse {

@@ -13,17 +13,18 @@ export class AuthService {
      * Register a new user
      */
     async register(input: RegisterInput) {
-        const { email, password, role, companyName } = input;
+        const { email, password, role, companyName, firstName, lastName } = input;
 
         // Create user in Supabase Auth
         const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
             email,
             password,
             email_confirm: true, // Auto-confirm for MVP, enable email verification in production
-            user_metadata: { role },
+            user_metadata: { role, firstName, lastName },
         });
 
         if (authError) {
+            console.error('Supabase Auth Error:', authError);
             if (authError.message.includes('already registered')) {
                 throw Errors.conflict('Email already registered');
             }
@@ -94,6 +95,7 @@ export class AuthService {
 
         return {
             user: userData,
+            onboardingCompleted: userData?.onboarding_completed,
             profile,
             session: {
                 accessToken: data.session.access_token,
@@ -184,7 +186,11 @@ export class AuthService {
             profile = data;
         }
 
-        return { user: userData, profile };
+        return {
+            user: userData,
+            onboardingCompleted: userData.onboarding_completed,
+            profile
+        };
     }
 
     /**
@@ -193,13 +199,23 @@ export class AuthService {
     async updateBrandProfile(userId: string, input: UpdateBrandProfileInput) {
         const { data, error } = await supabaseAdmin
             .from('brand_profiles')
-            .update(input)
+            .update({ ...input, user_id: userId }) // Ensure user_id is not overwritten poorly, though RLS handles it. Ideally just input. 
+            // Actually, let's keep it simple and just update the profile, AND the user table.
             .eq('user_id', userId)
             .select()
             .single();
 
         if (error) {
-            throw Errors.internal('Failed to update profile');
+            console.error("Brand Profile Update Error:", error);
+            throw Errors.internal(`Failed to update profile: ${error.message}`);
+        }
+
+        // Set onboarding_completed = true
+        const { error: userError } = await supabaseAdmin.from('users').update({ onboarding_completed: true }).eq('id', userId);
+
+        if (userError) {
+            console.error("User Onboarding Status Update Error:", userError);
+            throw Errors.internal(`Failed to update user status: ${userError.message}`);
         }
 
         return data;
@@ -224,7 +240,16 @@ export class AuthService {
             .single();
 
         if (error) {
-            throw Errors.internal('Failed to update profile');
+            console.error("Manufacturer Profile Update Error:", error);
+            throw Errors.internal(`Failed to update profile: ${error.message}`);
+        }
+
+        // Set onboarding_completed = true
+        const { error: userError } = await supabaseAdmin.from('users').update({ onboarding_completed: true }).eq('id', userId);
+
+        if (userError) {
+            console.error("User Onboarding Status Update Error:", userError);
+            throw Errors.internal(`Failed to update user status: ${userError.message}`);
         }
 
         return data;
