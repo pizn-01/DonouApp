@@ -12,14 +12,34 @@ export class AuthService {
     /**
      * Register a new user
      */
+    /**
+     * Helper to wait for the public.users record to be created by the trigger
+     */
+    private async waitForUser(userId: string, retries = 5, delayMs = 500): Promise<any> {
+        for (let i = 0; i < retries; i++) {
+            const { data } = await supabaseAdmin
+                .from('users')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+            if (data) return data;
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+        }
+        return null;
+    }
+
+    /**
+     * Register a new user
+     */
     async register(input: RegisterInput) {
         const { email, password, role, companyName, firstName, lastName } = input;
 
-        // Create user in Supabase Auth
+        // 1. Create user in Supabase Auth
         const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
             email,
             password,
-            email_confirm: true, // Auto-confirm for MVP, enable email verification in production
+            email_confirm: true, // Auto-confirm for MVP
             user_metadata: { role, firstName, lastName },
         });
 
@@ -33,30 +53,40 @@ export class AuthService {
 
         const userId = authData.user.id;
 
-        // Create profile based on role
-        if (role === UserRole.BRAND && companyName) {
-            await this.createBrandProfile(userId, companyName);
-        } else if (role === UserRole.MANUFACTURER && companyName) {
-            await this.createManufacturerProfile(userId, companyName);
+        try {
+            // 2. Wait for the database trigger to create the public.users record
+            // This fixes the race condition where profile creation fails because the FK user doesn't exist yet
+            const userData = await this.waitForUser(userId);
+
+            if (!userData) {
+                throw new Error('User creation trigger timed out');
+            }
+
+            // 3. Create profile based on role
+            if (role === UserRole.BRAND && companyName) {
+                await this.createBrandProfile(userId, companyName);
+            } else if (role === UserRole.MANUFACTURER && companyName) {
+                await this.createManufacturerProfile(userId, companyName);
+            }
+
+            return {
+                user: userData,
+                message: 'Registration successful',
+            };
+        } catch (error: any) {
+            console.error('Registration process failed, rolling back user:', error);
+            // Rollback: Delete the auth user if profile creation or trigger waiting fails
+            // This prevents "orphan" users who can login but have no profile/data
+            await supabaseAdmin.auth.admin.deleteUser(userId);
+            throw Errors.internal(`Registration processing failed: ${error.message || 'Unknown error'}`);
         }
-
-        // Get user data
-        const { data: userData } = await supabaseAdmin
-            .from('users')
-            .select('*')
-            .eq('id', userId)
-            .single();
-
-        return {
-            user: userData,
-            message: 'Registration successful',
-        };
     }
 
     /**
      * Login user
      */
     async login(input: LoginInput) {
+
         const { email, password } = input;
 
         const { data, error } = await supabaseAdmin.auth.signInWithPassword({
