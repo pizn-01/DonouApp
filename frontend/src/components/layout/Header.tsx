@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Search, User, Settings, LogOut } from "lucide-react";
+import { Search, User, Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
+import { NotificationPopover } from "../notifications/NotificationPopover";
 
 export function Header() {
     const navigate = useNavigate();
@@ -40,11 +41,7 @@ export function Header() {
                 </div>
             </div>
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" className="relative hover:bg-muted/50 rounded-full transition-colors">
-                    <Bell className="h-5 w-5 text-muted-foreground" />
-                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-600 border-2 border-background" />
-                    <span className="sr-only">Toggle notifications</span>
-                </Button>
+                <NotificationPopover />
 
                 <div className="relative" ref={menuRef}>
                     <Button

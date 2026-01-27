@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -23,44 +23,45 @@ export default function BriefDetailPage() {
     const [activeTab, setActiveTab] = useState("overview");
     const [showProposalModal, setShowProposalModal] = useState(false);
 
-    // Mock Data
-    const brief = {
-        id: "WF7224578",
-        title: "Premium Vitamin D3 Supplement",
-        companyName: "Evergreensuppl.co",
-        status: "new-invitation",
-        createdDate: "18/01/2026",
-        lastUpdated: "16/01/2026",
-        description: `We are looking for a reliable packaging solution for our new vitamin supplement line. The packaging solution to be eco-friendly, aesthetically pleasing and cost-effective. We will help you fill in the details.`,
-        requirements: `We are looking for a eco-friendly packaging solution for our new modern skincare. The packaging should be 100% recyclable, aesthetically pleasing, and cost-effective. We aim to launch this product in Q2 2024.`,
-        supplements: "Dietary Supplements",
-        specs: {
-            material: "Recyclable cardboard or biodegradable plastic",
-            printing: "Full color CMYK with some finish",
-            dimensions: "15cm x 10cm x 5cm",
-            moq: "10,000 units minimum"
-        },
-        details: {
-            quantity: "5,000 units",
-            timeline: "6-12 weeks",
-            budget: "€20,000 - €45,000 USD",
-            supplements: "Dietary Supplements"
-        },
-        attachments: [
-            { name: "Specs.pdf", size: "2.4 MB" },
-            { name: "Design-mockup.png", size: "780 Document > 4.2 MB" }
-        ],
-        warnings: [
-            {
-                type: "timeline",
-                message: "The timeline is not specified. Consider asking the brand for clarification before submitting your proposal."
-            },
-            {
-                type: "moq",
-                message: "MOQ is not mentioned. Confirming this ensures your proposal matches expectations."
+    const [brief, setBrief] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [myProposal, setMyProposal] = useState<any>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!id) return;
+            try {
+                // Parallel fetch: Brief Details + My Proposals (to check status)
+                const [briefRes, proposalsRes] = await Promise.allSettled([
+                    import('../../services/brief.service').then(({ briefService }) => briefService.getById(id)),
+                    import('../../services/proposal.service').then(({ proposalService }) => proposalService.getMyProposals())
+                ]);
+
+                // Handle Brief
+                if (briefRes.status === 'fulfilled') {
+                    setBrief(briefRes.value);
+                } else {
+                    throw new Error('Failed to load brief');
+                }
+
+                // Handle Proposal Status
+                if (proposalsRes.status === 'fulfilled') {
+                    const found = proposalsRes.value.find((p: any) => p.brief_id === id);
+                    setMyProposal(found || null);
+                }
+            } catch (err: any) {
+                setError(err.message || 'Failed to load data');
+            } finally {
+                setLoading(false);
             }
-        ]
-    };
+        };
+
+        fetchData();
+    }, [id]);
+
+    if (loading) return <div className="p-6 text-center">Loading brief details...</div>;
+    if (error || !brief) return <div className="p-6 text-center text-red-500">{error || 'Brief not found'}</div>;
 
     return (
         <DashboardLayout>
@@ -83,20 +84,16 @@ export default function BriefDetailPage() {
                         <div className="flex items-center gap-3">
                             <h1 className="text-2xl font-semibold text-gray-900">{brief.title}</h1>
                             <Badge className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200">
-                                {brief.status === 'new-invitation' ? 'New Invitation' : brief.status}
+                                {brief.status === 'new-invitation' ? 'New Invitation' : brief.status.replace('_', ' ')}
                             </Badge>
                         </div>
                         <div className="flex items-center gap-4 text-sm text-gray-500">
                             <span className="flex items-center gap-1">
                                 <Building2 className="h-4 w-4" />
-                                {brief.companyName}
+                                {brief.brand_profiles?.company_name || 'Brand'}
                             </span>
                             <span>•</span>
-                            <span>{brief.supplements}</span>
-                            <span>•</span>
-                            <span>Created {brief.createdDate}</span>
-                            <span>•</span>
-                            <span>Last Updated {brief.lastUpdated}</span>
+                            <span>{new Date(brief.created_at).toLocaleDateString()}</span>
                         </div>
                     </div>
                     <div className="flex gap-2">
@@ -111,8 +108,9 @@ export default function BriefDetailPage() {
                         <Button
                             size="sm"
                             onClick={() => setShowProposalModal(true)}
+                            disabled={!!myProposal}
                         >
-                            Submit Proposal
+                            {myProposal ? 'Proposal Sent' : 'Submit Proposal'}
                         </Button>
                     </div>
                 </div>
@@ -133,57 +131,23 @@ export default function BriefDetailPage() {
 
                     {/* Overview Tab */}
                     <TabsContent value="overview" className="space-y-6">
-                        {/* Warning Cards */}
-                        {brief.warnings.map((warning, index) => (
-                            <div
-                                key={index}
-                                className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3"
-                            >
-                                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <AlertCircle className="h-5 w-5 text-blue-600" />
-                                </div>
-                                <div className="flex-1">
-                                    <p className="text-sm text-gray-700">{warning.message}</p>
-                                </div>
-                                <Button
-                                    variant="link"
-                                    size="sm"
-                                    className="text-blue-600 hover:text-blue-700"
-                                >
-                                    Chat with Brand
-                                </Button>
-                            </div>
-                        ))}
 
                         {/* Project Requirements */}
                         <div className="bg-white rounded-lg border border-gray-200 p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Project Requirements</h2>
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Project Description</h2>
                             <p className="text-sm text-gray-700 leading-relaxed">
-                                {brief.requirements}
+                                {brief.description}
                             </p>
                         </div>
 
                         {/* Technical Specifications */}
                         <div className="bg-white rounded-lg border border-gray-200 p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Technical Specifications</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="text-sm font-medium text-gray-500">Material</label>
-                                    <p className="text-sm text-gray-900 mt-1">{brief.specs.material}</p>
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium text-gray-500">Dimensions</label>
-                                    <p className="text-sm text-gray-900 mt-1">{brief.specs.dimensions}</p>
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium text-gray-500">Printing</label>
-                                    <p className="text-sm text-gray-900 mt-1">{brief.specs.printing}</p>
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium text-gray-500">MOQ</label>
-                                    <p className="text-sm text-gray-900 mt-1">{brief.specs.moq}</p>
-                                </div>
-                            </div>
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Specifications</h2>
+                            <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+                                {brief.requirements?.specifications?.map((spec: string, index: number) => (
+                                    <li key={index}>{spec}</li>
+                                )) || <li>No specific specifications listed</li>}
+                            </ul>
                         </div>
 
                         {/* Brief Details */}
@@ -194,28 +158,28 @@ export default function BriefDetailPage() {
                                     <Package className="h-5 w-5 text-gray-400" />
                                     <div className="flex-1">
                                         <label className="text-sm font-medium text-gray-500">Quantity</label>
-                                        <p className="text-sm text-gray-900">{brief.details.quantity}</p>
+                                        <p className="text-sm text-gray-900">{brief.requirements?.quantity?.toLocaleString()}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <Clock className="h-5 w-5 text-gray-400" />
                                     <div className="flex-1">
                                         <label className="text-sm font-medium text-gray-500">Timeline</label>
-                                        <p className="text-sm text-gray-900">{brief.details.timeline}</p>
+                                        <p className="text-sm text-gray-900">{brief.timeline}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <DollarSign className="h-5 w-5 text-gray-400" />
                                     <div className="flex-1">
                                         <label className="text-sm font-medium text-gray-500">Budget</label>
-                                        <p className="text-sm text-gray-900">{brief.details.budget}</p>
+                                        <p className="text-sm text-gray-900">{brief.currency} {brief.budget_range_min?.toLocaleString()} - {brief.budget_range_max?.toLocaleString()}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <FileText className="h-5 w-5 text-gray-400" />
                                     <div className="flex-1">
-                                        <label className="text-sm font-medium text-gray-500">Supplements</label>
-                                        <p className="text-sm text-gray-900">{brief.details.supplements}</p>
+                                        <label className="text-sm font-medium text-gray-500">Product Type</label>
+                                        <p className="text-sm text-gray-900">{brief.requirements?.productType}</p>
                                     </div>
                                 </div>
                             </div>
@@ -225,40 +189,68 @@ export default function BriefDetailPage() {
                         <div className="bg-white rounded-lg border border-gray-200 p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Attachments</h2>
                             <div className="space-y-3">
-                                {brief.attachments.map((file, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
-                                    >
-                                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                                            <File className="h-5 w-5 text-gray-600" />
+                                {brief.attachments?.map((fileUrl: string, index: number) => {
+                                    const fileName = fileUrl.split('/').pop() || 'File';
+                                    return (
+                                        <div
+                                            key={index}
+                                            className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                                            onClick={() => window.open(fileUrl, '_blank')}
+                                        >
+                                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                                                <File className="h-5 w-5 text-gray-600" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-sm font-medium text-gray-900 truncate">{fileName}</p>
+                                            </div>
+                                            <Button variant="ghost" size="sm">
+                                                Download
+                                            </Button>
                                         </div>
-                                        <div className="flex-1">
-                                            <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                                            <p className="text-xs text-gray-500">{file.size}</p>
-                                        </div>
-                                        <Button variant="ghost" size="sm">
-                                            Download
-                                        </Button>
-                                    </div>
-                                ))}
+                                    );
+                                })}
+                                {(!brief.attachments || brief.attachments.length === 0) && (
+                                    <p className="text-sm text-gray-500">No attachments</p>
+                                )}
                             </div>
                         </div>
                     </TabsContent>
 
                     {/* Proposal Tab */}
                     <TabsContent value="proposal">
-                        <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <FileText className="h-8 w-8 text-gray-400" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Proposals Submitted Yet</h3>
-                            <p className="text-sm text-gray-500 mb-4 max-w-md mx-auto">
-                                You haven't submitted a proposal yet. Sending a proposal helps the brand evaluate your capabilities.
-                            </p>
-                            <Button onClick={() => setShowProposalModal(true)}>
-                                Submit Proposal
-                            </Button>
+                        <div className="bg-white rounded-lg border border-gray-200 p-6">
+                            {myProposal ? (
+                                <div className="text-left">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <div className="p-2 bg-green-100 rounded-full">
+                                            <FileText className="h-6 w-6 text-green-600" />
+                                        </div>
+                                        <div>
+                                            <h3 className="tex-lg font-semibold text-gray-900">Proposal Submitted</h3>
+                                            <p className="text-sm text-gray-500">Submitted on {new Date(myProposal.created_at).toLocaleDateString()}</p>
+                                        </div>
+                                        <Badge className="ml-auto capitalize">{myProposal.status.replace('_', ' ')}</Badge>
+                                    </div>
+                                    <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                                        <p><strong>Price:</strong> {myProposal.currency} {myProposal.price}</p>
+                                        <p><strong>Timeline:</strong> {myProposal.delivery_timeline}</p>
+                                        <p><strong>Notes:</strong> {myProposal.proposal_details?.notes}</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-center p-6">
+                                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <FileText className="h-8 w-8 text-gray-400" />
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Proposals Submitted Yet</h3>
+                                    <p className="text-sm text-gray-500 mb-4 max-w-md mx-auto">
+                                        You haven't submitted a proposal yet. Sending a proposal helps the brand evaluate your capabilities.
+                                    </p>
+                                    <Button onClick={() => setShowProposalModal(true)}>
+                                        Submit Proposal
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     </TabsContent>
 
@@ -286,6 +278,6 @@ export default function BriefDetailPage() {
                     briefId={id || ''}
                 />
             </div>
-        </DashboardLayout>
+        </DashboardLayout >
     );
 }

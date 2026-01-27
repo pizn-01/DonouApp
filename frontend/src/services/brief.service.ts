@@ -106,21 +106,10 @@ class BriefService {
 
     // Helper to get dashboard stats efficiently
     async getBrandStats() {
-        // Fetch total count (limit 1)
-        const totalReq = this.getAll({ limit: 1 });
-        // Fetch active count (limit 1)
-        const activeReq = this.getAll({ status: BriefStatus.OPEN, limit: 1 });
-        // Fetch completed/matched count
-        const matchedReq = this.getAll({ status: BriefStatus.MATCHED, limit: 1 });
-
-        const [totalRes, activeRes, matchedRes] = await Promise.all([totalReq, activeReq, matchedReq]);
-
-        return {
-            totalBriefs: totalRes.pagination.total,
-            activeBriefs: activeRes.pagination.total,
-            acceptedProposals: matchedRes.pagination.total, // Using matched/accepted as proxy
-            pendingProposals: 0 // Cannot calculate without proposals endpoint
-        };
+        const response = await axios.get(`${API_URL}/briefs/stats`, {
+            headers: this.getHeaders(),
+        });
+        return response.data.data;
     }
 }
 

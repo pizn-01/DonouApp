@@ -9,6 +9,7 @@ interface SubmitProposalModalProps {
     briefId: string;
 }
 
+// No change needed to props
 export const SubmitProposalModal = ({ isOpen, onClose, briefId }: SubmitProposalModalProps) => {
     const [formData, setFormData] = useState({
         brandPrice: '',
@@ -18,13 +19,35 @@ export const SubmitProposalModal = ({ isOpen, onClose, briefId }: SubmitProposal
     });
     const [files, setFiles] = useState<File[]>([]);
 
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
     if (!isOpen) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: Implement proposal submission API call
-        console.log('Submitting proposal:', formData, files);
-        onClose();
+        setLoading(true);
+        setError(null);
+        try {
+            await import('../../services/proposal.service').then(({ proposalService }) =>
+                proposalService.create({
+                    brief_id: briefId,
+                    price: parseFloat(formData.brandPrice),
+                    delivery_timeline: formData.timeline,
+                    proposal_details: {
+                        notes: formData.proposalNotes,
+                        moq: formData.minimumOrderQuantity
+                    },
+                    attachments: [] // File upload omitted for MVP
+                })
+            );
+            onClose();
+            // Ideally trigger refresh in parent
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Failed to submit proposal');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,21 +168,26 @@ export const SubmitProposalModal = ({ isOpen, onClose, briefId }: SubmitProposal
                     </div>
 
                     {/* Actions */}
-                    <div className="flex gap-3">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="flex-1"
-                            onClick={onClose}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="submit"
-                            className="flex-1"
-                        >
-                            Submit Proposal
-                        </Button>
+                    <div className="flex flex-col gap-3">
+                        {error && <div className="text-red-500 text-sm px-1">{error}</div>}
+                        <div className="flex gap-3">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="flex-1"
+                                onClick={onClose}
+                                disabled={loading}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                className="flex-1"
+                                disabled={loading}
+                            >
+                                {loading ? 'Submitting...' : 'Submit Proposal'}
+                            </Button>
+                        </div>
                     </div>
                 </form>
             </div>

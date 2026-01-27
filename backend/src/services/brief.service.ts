@@ -325,4 +325,49 @@ export class BriefService {
 
         return brief;
     }
+
+    /**
+     * Get dashboard stats for a brand
+     */
+    async getBrandStats(brandId: string) {
+        // 1. Get Brief Counts by Status
+        const { data: briefs, error: briefError } = await supabase
+            .from('briefs')
+            .select('id, status')
+            .eq('brand_id', brandId)
+            .is('deleted_at', null);
+
+        if (briefError) throw new Error(`Failed to fetch brief stats: ${briefError.message}`);
+
+        const totalBriefs = briefs.length;
+        const activeBriefs = briefs.filter(b => b.status === BriefStatus.OPEN).length;
+        const briefIds = briefs.map(b => b.id);
+
+        if (briefIds.length === 0) {
+            return {
+                totalBriefs: 0,
+                activeBriefs: 0,
+                pendingProposals: 0,
+                acceptedProposals: 0
+            };
+        }
+
+        // 2. Get Proposal Counts (Pending and Accepted) linked to these briefs
+        const { data: proposals, error: proposalError } = await supabase
+            .from('proposals')
+            .select('status')
+            .in('brief_id', briefIds);
+
+        if (proposalError) throw new Error(`Failed to fetch proposal stats: ${proposalError.message}`);
+
+        const pendingProposals = proposals.filter(p => p.status === 'SUBMITTED').length;
+        const acceptedProposals = proposals.filter(p => p.status === 'ACCEPTED').length;
+
+        return {
+            totalBriefs,
+            activeBriefs,
+            pendingProposals,
+            acceptedProposals
+        };
+    }
 }

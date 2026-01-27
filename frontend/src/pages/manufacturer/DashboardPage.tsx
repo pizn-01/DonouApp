@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Clock, FileText, CheckCircle, ArrowRight, Info } from 'lucide-react';
@@ -6,72 +7,71 @@ import { StatCard } from '@/components/manufacturer/StatCard';
 
 export default function ManufacturerDashboardPage() {
     const navigate = useNavigate();
+    const [stats, setStats] = useState({ totalBrief: 0, newBrief: 0, activeBrief: 0 });
+    const [recentBriefs, setRecentBriefs] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    // Mock data - in production, fetch from API
-    const stats = {
-        totalBrief: 3,
-        newBrief: 2,
-        activeBrief: 3
-    };
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                // Parallel fetch for proposals and matches
+                const [proposalsRes, matchesRes] = await Promise.allSettled([
+                    import('../../services/proposal.service').then(({ proposalService }) => proposalService.getMyProposals()),
+                    import('../../services/matching.service').then(({ matchingService }) => matchingService.getRecommendations())
+                ]);
 
-    const recentBriefs = [
-        {
-            id: '#WF7234570',
-            title: 'Premium Vitamin D3 Supplement',
-            status: 'Draft',
-            description: 'This brief is being created with AI assistance. The AI will help you fill in the details.',
-            supplements: 'Dietary Supplements',
-            createdDate: '18/01/2026',
-            budget: '€1000 - €250000 USD'
-        },
-        {
-            id: '#WF7234570',
-            title: 'Premium Vitamin D3 Supplement',
-            status: 'Upload',
-            description: 'This brief is being created with AI assistance. The AI will help you fill in the details.',
-            supplements: 'Dietary Supplements',
-            createdDate: '18/01/2026',
-            budget: '€1000 - €250000 USD'
-        },
-        {
-            id: '#WF7234570',
-            title: 'Premium Vitamin D3 Supplement',
-            status: 'Upload',
-            description: 'This brief is being created with AI assistance. The AI will help you fill in the details.',
-            supplements: 'Dietary Supplements',
-            createdDate: '18/01/2026',
-            budget: '€1000 - €250000 USD'
-        }
-    ];
+                let totalProposals = 0;
+                let activeProposals = 0;
+                let newMatches = 0;
+                let briefsList: any[] = [];
 
+                if (proposalsRes.status === 'fulfilled') {
+                    const proposals = proposalsRes.value;
+                    totalProposals = proposals.length;
+                    activeProposals = proposals.filter((p: any) => p.status !== 'REJECTED' && p.status !== 'WITHDRAWN').length;
+                }
+
+                if (matchesRes.status === 'fulfilled') {
+                    const matches = matchesRes.value.matches || [];
+                    newMatches = matches.length;
+
+                    // Map matches to display format
+                    briefsList = matches.slice(0, 3).map((match: any) => ({
+                        id: match.brief.id,
+                        title: match.brief.title,
+                        status: 'New Match', // or derive from match score/status
+                        description: match.brief.description?.substring(0, 100) + '...',
+                        supplements: match.brief.category || 'General',
+                        createdDate: new Date(match.brief.created_at).toLocaleDateString(),
+                        budget: `${match.brief.currency} ${match.brief.budget_range_min?.toLocaleString()} - ${match.brief.budget_range_max?.toLocaleString()}`
+                    }));
+                }
+
+                setStats({
+                    totalBrief: newMatches, // Using matches as "Available Briefs"
+                    newBrief: newMatches,
+                    activeBrief: activeProposals
+                });
+                setRecentBriefs(briefsList);
+
+            } catch (error) {
+                console.error("Failed to fetch dashboard data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, []);
+
+    // Mock notifications for now
     const notifications = [
         {
             id: 1,
-            title: 'New manufacturer match',
-            message: 'A new manufacturer has been matched to your brief',
-            time: '2h ago',
+            title: 'Welcome!',
+            message: 'Complete your profile to get better matches.',
+            time: 'Just now',
             isNew: true
-        },
-        {
-            id: 2,
-            title: 'Brief published',
-            message: 'Your brief "Premium Vitamin D3 Supplement" has been successfully published',
-            time: '5h ago',
-            isNew: false
-        },
-        {
-            id: 3,
-            title: 'Draft reminder',
-            message: 'You have 2 drafts that haven\'t been updated in over a week',
-            time: '1d ago',
-            isNew: false
-        },
-        {
-            id: 4,
-            title: 'Brief published',
-            message: 'Your brief "Premium Vitamin D3 Supplement" has been successfully published',
-            time: '2d ago',
-            isNew: false
         }
     ];
 
@@ -105,27 +105,33 @@ export default function ManufacturerDashboardPage() {
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <StatCard
-                        label="Total Brief"
-                        value={isEmpty ? '-' : stats.totalBrief}
-                        icon={<FileText />}
-                        iconBgColor="bg-gray-50"
-                        iconColor="text-gray-600"
-                    />
-                    <StatCard
-                        label="New Brief"
-                        value={isEmpty ? '-' : stats.newBrief}
-                        icon={<FileText />}
-                        iconBgColor="bg-gray-50"
-                        iconColor="text-gray-600"
-                    />
-                    <StatCard
-                        label="Active Brief"
-                        value={isEmpty ? '-' : stats.activeBrief}
-                        icon={<CheckCircle />}
-                        iconBgColor="bg-gray-50"
-                        iconColor="text-gray-600"
-                    />
+                    {loading ? (
+                        <div className="col-span-3 text-center py-10">Loading stats...</div>
+                    ) : (
+                        <>
+                            <StatCard
+                                label="Total Brief"
+                                value={isEmpty ? '-' : stats.totalBrief}
+                                icon={<FileText />}
+                                iconBgColor="bg-gray-50"
+                                iconColor="text-gray-600"
+                            />
+                            <StatCard
+                                label="New Brief"
+                                value={isEmpty ? '-' : stats.newBrief}
+                                icon={<FileText />}
+                                iconBgColor="bg-gray-50"
+                                iconColor="text-gray-600"
+                            />
+                            <StatCard
+                                label="Active Brief"
+                                value={isEmpty ? '-' : stats.activeBrief}
+                                icon={<CheckCircle />}
+                                iconBgColor="bg-gray-50"
+                                iconColor="text-gray-600"
+                            />
+                        </>
+                    )}
                 </div>
 
                 {/* Main Content Grid */}
@@ -163,11 +169,8 @@ export default function ManufacturerDashboardPage() {
                                     >
                                         <div className="flex items-start justify-between mb-2">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-xs text-gray-500">{brief.id}</span>
-                                                <span className={`px-2 py-0.5 text-xs font-medium rounded
-                                                    ${brief.status === 'Draft' ? 'bg-gray-100 text-gray-700' :
-                                                        brief.status === 'Upload' ? 'bg-green-50 text-green-700' :
-                                                            'bg-blue-50 text-blue-700'}`}>
+                                                <span className="text-xs text-gray-500">#{brief.id.substring(0, 8)}</span>
+                                                <span className="px-2 py-0.5 text-xs font-medium rounded bg-blue-50 text-blue-700">
                                                     {brief.status}
                                                 </span>
                                             </div>
@@ -175,6 +178,10 @@ export default function ManufacturerDashboardPage() {
                                                 variant="link"
                                                 size="sm"
                                                 className="text-blue-600 hover:text-blue-700 h-auto p-0"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate(`/manufacturer/briefs/${brief.id}`);
+                                                }}
                                             >
                                                 View Details <ArrowRight className="h-3 w-3 ml-1" />
                                             </Button>

@@ -20,6 +20,13 @@ router.use(authenticate);
 router.post('/', requireBrand, briefController.create.bind(briefController));
 
 /**
+ * @route   GET /api/briefs/stats
+ * @desc    Get dashboard statistics
+ * @access  Brand only
+ */
+router.get('/stats', requireBrand, briefController.getStats.bind(briefController));
+
+/**
  * @route   GET /api/briefs
  * @desc    Get all briefs (role-based filtering)
  * @access  Authenticated users
