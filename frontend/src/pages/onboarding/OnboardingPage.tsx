@@ -12,7 +12,7 @@ import { AuthLayout } from "@/components/layout/AuthLayout";
 import type { User } from "@/features/auth/types";
 import axios from "axios";
 
-const API_URL = "http://localhost:3000/api/v1";
+const API_URL = "http://localhost:3000/api";
 
 // Brand Schema
 const brandSchema = z.object({
@@ -54,7 +54,9 @@ export default function OnboardingPage() {
             setUser(parsedUser);
 
             // Pre-fill some data if available
-            if (parsedUser.role === "BRAND") {
+            const isBrand = parsedUser.role?.toLowerCase() === "brand";
+
+            if (isBrand) {
                 // brandForm.setValue("companyName", parsedUser.companyName || ""); // If available
             } else {
                 // manufacturerForm.setValue("businessName", parsedUser.companyName || ""); 
@@ -82,14 +84,22 @@ export default function OnboardingPage() {
         setIsLoading(true);
         setError("");
         try {
-            await axios.put(`${API_URL}/auth/profile`, data, {
+            // Transform data to match backend expectations
+            const payload = {
+                company_name: data.companyName,
+                industry: data.industry,
+                description: data.description,
+                website: data.website,
+            };
+
+            await axios.post(`${API_URL}/onboarding/brand`, payload, {
                 headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
             });
             handleSuccess();
         } catch (err: unknown) {
             const errorMessage = err instanceof Error ? err.message : "Failed to save profile.";
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            setError((err as any)?.response?.data?.error?.message || errorMessage);
+            setError((err as any)?.response?.data?.message || errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -99,22 +109,32 @@ export default function OnboardingPage() {
         setIsLoading(true);
         setError("");
         try {
-            // Transform comma separated strings to arrays and handle numeric fields
+            // Transform data to match backend expectations
             const payload = {
-                ...data,
-                minimumOrderQuantity: data.minimumOrderQuantity === "" ? undefined : Number(data.minimumOrderQuantity),
-                capabilities: data.capabilities ? data.capabilities.split(',').map((s: string) => s.trim()) : [],
-                certifications: data.certifications ? data.certifications.split(',').map((s: string) => s.trim()) : [],
+                company_name: data.businessName,
+                factory_location: data.location,
+                production_capacity: data.productionCapacity,
+                min_order_quantity: data.minimumOrderQuantity === "" ? undefined : Number(data.minimumOrderQuantity),
+                capabilities: data.capabilities ? data.capabilities.split(',').map((s: string) => {
+                    const trimmed = s.trim();
+                    return {
+                        category: trimmed,
+                        subcategories: [trimmed] // Use the capability itself as subcategory to satisfy validator
+                    };
+                }) : [],
+                certifications: data.certifications ? data.certifications.split(',').map((s: string) => ({
+                    name: s.trim()
+                })) : [],
             };
 
-            await axios.put(`${API_URL}/auth/profile`, payload, {
+            await axios.post(`${API_URL}/onboarding/manufacturer`, payload, {
                 headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
             });
             handleSuccess();
         } catch (err: unknown) {
             const errorMessage = err instanceof Error ? err.message : "Failed to save profile.";
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            setError((err as any)?.response?.data?.error?.message || errorMessage);
+            setError((err as any)?.response?.data?.message || errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -125,19 +145,28 @@ export default function OnboardingPage() {
         if (user) {
             const updatedUser = { ...user, onboardingCompleted: true };
             localStorage.setItem("user", JSON.stringify(updatedUser));
-            navigate("/dashboard");
+
+            // Redirect based on role
+            const isBrand = user.role?.toLowerCase() === 'brand';
+            if (isBrand) {
+                navigate("/brand/dashboard");
+            } else {
+                navigate("/manufacturer/dashboard");
+            }
         }
     };
 
     if (!user) return null; // Or loader
 
+    const isBrand = user.role?.toLowerCase() === "brand";
+
     return (
         <AuthLayout
             title="Complete Your Profile"
-            subtitle={`Tell us more about your ${user.role === 'BRAND' ? 'brand' : 'manufacturing business'}`}
+            subtitle={`Tell us more about your ${isBrand ? 'brand' : 'manufacturing business'}`}
         >
             <div className="grid gap-6">
-                {user.role === "BRAND" ? (
+                {isBrand ? (
                     <form onSubmit={brandForm.handleSubmit(onBrandSubmit)}>
                         <div className="grid gap-4">
                             <div className="grid gap-2">

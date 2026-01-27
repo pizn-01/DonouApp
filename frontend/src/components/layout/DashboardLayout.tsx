@@ -1,15 +1,20 @@
 import { type ReactNode } from "react";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
+import { BrandAIChat } from "../BrandAIChat";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DashboardLayoutProps {
     children: ReactNode;
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
+    const { user } = useAuth();
+    const isBrand = user?.role === 'brand';
+
     return (
-        <div className="flex min-h-screen bg-muted/40 font-sans">
-            <div className="hidden border-r bg-background md:block w-64 fixed h-full z-40">
+        <div className="flex min-h-screen bg-gray-50 font-sans">
+            <div className="hidden border-r bg-white md:block w-64 fixed h-full z-40">
                 <Sidebar className="h-full" />
             </div>
             <div className="flex flex-col flex-1 md:pl-64">
@@ -18,6 +23,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     {children}
                 </main>
             </div>
+            {isBrand && <BrandAIChat />}
         </div>
     );
 }

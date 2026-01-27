@@ -3,156 +3,368 @@ import { Link } from "react-router-dom";
 import {
     Plus,
     Search,
-    Filter,
-    MoreVertical,
-    FileText,
+    Building2,
+    Package,
     Calendar,
-    DollarSign,
-    Sparkles
+    Wallet,
+    MessageSquare,
+    Sparkles,
+    ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Pagination } from "@/components/ui/pagination";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { BriefStatus, type Brief } from "@/features/briefs/types";
 import { cn } from "@/lib/utils";
 
-// Mock data (matches backend structure)
-const MOCK_BRIEFS: Brief[] = [];
+const MOCK_BRIEFS: Brief[] = [
+    {
+        id: "RB1234528",
+        title: "Premium Vitamin D3 Supplement",
+        status: BriefStatus.DRAFT,
+        description: "This brief is being created with AI assistance. The AI will help you fill in the details.",
+        category: "Dietary Supplements",
+        budget: { min: 1000, max: 100000, currency: "USD" },
+        timeline: "2026-04-15",
+        aiGenerated: false,
+        createdAt: "2025-01-26T10:00:00Z",
+        updatedAt: "2025-01-26T10:00:00Z",
+        brandId: "1",
+        companyName: "Evergreensuppl.co",
+        requirements: {
+            productType: "Supplements",
+            quantity: 1000,
+            specifications: ["Vitamin D3", "Capsules"],
+            qualityStandards: ["GMP Certified"],
+        }
+    },
+    {
+        id: "RB1234529",
+        title: "Premium Vitamin D3 Supplement",
+        status: BriefStatus.ACTIVE,
+        description: "This brief is being created with AI assistance. The AI will help you fill in the details.",
+        category: "Dietary Supplements",
+        budget: { min: 1000, max: 100000, currency: "USD" },
+        timeline: "2026-04-15",
+        aiGenerated: false,
+        createdAt: "2025-01-26T10:00:00Z",
+        updatedAt: "2025-01-26T10:00:00Z",
+        brandId: "1",
+        companyName: "Evergreensuppl.co",
+        requirements: {
+            productType: "Supplements",
+            quantity: 1000,
+            specifications: [],
+        }
+    },
+    {
+        id: "RB1234530",
+        title: "Premium Vitamin D3 Supplement",
+        status: "matched" as BriefStatus,
+        description: "This brief is being created with AI assistance. The AI will help you fill in the details.",
+        category: "Dietary Supplements",
+        budget: { min: 1000, max: 100000, currency: "USD" },
+        timeline: "2026-04-15",
+        aiGenerated: false,
+        createdAt: "2025-01-26T10:00:00Z",
+        updatedAt: "2025-01-26T10:00:00Z",
+        brandId: "1",
+        companyName: "Evergreensuppl.co",
+        requirements: {
+            productType: "Supplements",
+            quantity: 1000,
+            specifications: [],
+        }
+    },
+    {
+        id: "RB1234531",
+        title: "Premium Vitamin D3 Supplement",
+        status: "proposal-received" as BriefStatus,
+        description: "The brand has chosen another manufacturer for this brief. You can still view the proposal for reference or continue submitting proposals to other briefs.",
+        category: "Dietary Supplements",
+        budget: { min: 1000, max: 100000, currency: "USD" },
+        timeline: "2026-04-15",
+        aiGenerated: false,
+        createdAt: "2025-01-26T10:00:00Z",
+        updatedAt: "2025-01-26T10:00:00Z",
+        brandId: "1",
+        companyName: "Evergreensuppl.co",
+        requirements: {
+            productType: "Supplements",
+            quantity: 1000,
+            specifications: [],
+        }
+    }
+];
 
-const StatusBadge = ({ status }: { status: BriefStatus }) => {
-    const styles = {
-        [BriefStatus.DRAFT]: "bg-gray-100 text-gray-700 border-gray-200",
-        [BriefStatus.ACTIVE]: "bg-emerald-50 text-emerald-700 border-emerald-100",
-        [BriefStatus.IN_PROGRESS]: "bg-blue-50 text-blue-700 border-blue-100",
-        [BriefStatus.COMPLETED]: "bg-purple-50 text-purple-700 border-purple-100",
-        [BriefStatus.CANCELLED]: "bg-red-50 text-red-700 border-red-100",
+const getStatusBadgeVariant = (status: BriefStatus): "draft" | "shared" | "matched" | "proposal-received" | "default" => {
+    const statusMap: Record<string, "draft" | "shared" | "matched" | "proposal-received" | "default"> = {
+        [BriefStatus.DRAFT]: "draft",
+        [BriefStatus.ACTIVE]: "shared",
+        "matched": "matched",
+        "proposal-received": "proposal-received",
+        [BriefStatus.IN_PROGRESS]: "shared",
+        [BriefStatus.COMPLETED]: "matched",
     };
+    return statusMap[status] || "default";
+};
 
-    return (
-        <span className={cn("px-2.5 py-0.5 rounded-full text-xs font-semibold border", styles[status])}>
-            {status}
-        </span>
-    );
+const formatStatus = (status: BriefStatus): string => {
+    const statusNames: Record<string, string> = {
+        [BriefStatus.DRAFT]: "Draft",
+        [BriefStatus.ACTIVE]: "Shared",
+        "matched": "Matched",
+        "proposal-received": "Proposal Received",
+        [BriefStatus.IN_PROGRESS]: "Shared",
+        [BriefStatus.COMPLETED]: "Matched",
+    };
+    return statusNames[status] || status;
 };
 
 export default function BriefsPage() {
     const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [categoryFilter, setCategoryFilter] = useState("all");
+    const [statusFilter, setStatusFilter] = useState("all");
+    const itemsPerPage = 5;
+
+    const filteredBriefs = MOCK_BRIEFS.filter(brief => {
+        // Search filtering
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            if (
+                !brief.title.toLowerCase().includes(term) &&
+                !brief.description.toLowerCase().includes(term) &&
+                !brief.category.toLowerCase().includes(term)
+            ) {
+                return false;
+            }
+        }
+
+        // Category filtering
+        if (categoryFilter !== "all" && brief.category !== categoryFilter) {
+            return false;
+        }
+
+        // Status filtering
+        if (statusFilter !== "all" && brief.status !== statusFilter) {
+            return false;
+        }
+
+        return true;
+    });
+
+    const totalPages = Math.ceil(filteredBriefs.length / itemsPerPage);
+    const paginatedBriefs = filteredBriefs.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
 
     return (
         <DashboardLayout>
-            <div className="flex flex-col gap-8 max-w-7xl mx-auto">
+            <div className="flex flex-col gap-6 max-w-7xl mx-auto">
+                {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-foreground">My Briefs</h1>
-                        <p className="text-muted-foreground mt-1 text-lg">
-                            Manage your manufacturing projects and AI generations.
+                        <h1 className="text-h2 text-gray-900">My Briefs</h1>
+                        <p className="text-body-md text-gray-500 mt-1">
+                            Manage your manufacturing projects
                         </p>
                     </div>
                     <div className="flex gap-3">
                         <Link to="/briefs/create-ai">
-                            <Button variant="outline" className="h-10 border-primary/20 hover:border-primary/50 hover:bg-primary/5 text-primary">
-                                <Sparkles className="mr-2 h-4 w-4 text-indigo-500" />
+                            <Button variant="secondary" leadingIcon={<Sparkles className="text-primary-600" />}>
                                 Spark with AI
                             </Button>
                         </Link>
                         <Link to="/briefs/create">
-                            <Button className="h-10 shadow-sm">
-                                <Plus className="mr-2 h-4 w-4" />
+                            <Button variant="primary" leadingIcon={<Plus />}>
                                 New Brief
                             </Button>
                         </Link>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 p-1 bg-background rounded-lg border shadow-sm max-w-2xl">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                {/* Filters Bar */}
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+                    {/* Search */}
+                    <div className="relative w-full sm:w-80">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                         <Input
-                            placeholder="Search briefs by title, category, or status..."
-                            className="pl-9 border-0 shadow-none focus-visible:ring-0 bg-transparent text-base h-9"
+                            placeholder="Search..."
+                            className="pl-10 border-gray-200"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <div className="w-px h-6 bg-border" />
-                    <Button variant="ghost" size="sm" className="px-3 text-muted-foreground hover:text-foreground">
-                        <Filter className="h-4 w-4 mr-2" />
-                        Filters
-                    </Button>
+
+                    {/* Filter Dropdowns */}
+                    <div className="flex gap-3 flex-wrap">
+                        {/* Category Filter */}
+                        <div className="relative">
+                            <select
+                                value={categoryFilter}
+                                onChange={(e) => setCategoryFilter(e.target.value)}
+                                className="h-10 pl-3.5 pr-9 rounded-md border border-gray-200 bg-white text-sm text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-primary-600"
+                            >
+                                <option value="all">Select Category</option>
+                                <option value="Dietary Supplements">Dietary Supplements</option>
+                                <option value="Apparel">Apparel</option>
+                                <option value="Accessories">Accessories</option>
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
+                        </div>
+
+                        {/* Page Filter - placeholder for now */}
+                        <div className="relative">
+                            <select className="h-10 pl-3.5 pr-9 rounded-md border border-gray-200 bg-white text-sm text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-primary-600">
+                                <option>Select Page</option>
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
+                        </div>
+
+                        {/* Status Filter */}
+                        <div className="relative">
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                                className="h-10 pl-3.5 pr-9 rounded-md border border-gray-200 bg-white text-sm text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-primary-600"
+                            >
+                                <option value="all">Select Status</option>
+                                <option value={BriefStatus.DRAFT}>Draft</option>
+                                <option value={BriefStatus.ACTIVE}>Shared</option>
+                                <option value="matched">Matched</option>
+                                <option value="proposal-received">Proposal Received</option>
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
+                        </div>
+                    </div>
                 </div>
 
-                <div className="grid gap-4">
-                    {MOCK_BRIEFS.length === 0 ? (
-                        <div className="text-center py-20 border rounded-lg bg-muted/10 border-dashed">
-                            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-4">
-                                <FileText className="h-6 w-6 text-muted-foreground" />
-                            </div>
-                            <h3 className="text-lg font-medium">No briefs yet</h3>
-                            <p className="text-muted-foreground mt-2 mb-6 max-w-sm mx-auto">
-                                Create your first manufacturing brief to start getting proposals from suppliers.
+                {/* Brief Cards */}
+                <div className="flex flex-col gap-4">
+                    {paginatedBriefs.length === 0 ? (
+                        <div className="text-center py-16 border-2 border-dashed rounded-lg bg-gray-50">
+                            <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                            <h3 className="text-h4 text-gray-900 mb-2">No briefs found</h3>
+                            <p className="text-body-md text-gray-500 mb-6">
+                                {searchTerm
+                                    ? "Try adjusting your search or filters"
+                                    : "Create your first brief to get started"}
                             </p>
-                            <Link to="/briefs/create">
-                                <Button>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Create First Brief
-                                </Button>
-                            </Link>
+                            {!searchTerm && (
+                                <Link to="/briefs/create">
+                                    <Button variant="primary">
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Create First Brief
+                                    </Button>
+                                </Link>
+                            )}
                         </div>
                     ) : (
-                        MOCK_BRIEFS.map((brief) => (
-                            <Card key={brief.id} className="group hover:shadow-md transition-all duration-200 border-muted hover:border-primary/20 cursor-pointer">
-                                <Link to={`/briefs/${brief.id}`} className="block">
-                                    <CardContent className="p-6">
+                        paginatedBriefs.map((brief) => (
+                            <Card key={brief.id} className="border border-gray-200 hover:border-primary-200 hover:shadow-md transition-all">
+                                <CardContent className="p-6">
+                                    <div className="flex flex-col gap-4">
+                                        {/* Header Row */}
                                         <div className="flex items-start justify-between">
-                                            <div className="space-y-3 flex-1">
+                                            <div className="flex flex-col gap-2 flex-1">
+                                                {/* Brief ID and Title */}
                                                 <div className="flex items-center gap-3 flex-wrap">
-                                                    <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors">
+                                                    <span className="text-body-sm text-primary-600 font-medium">
+                                                        #{brief.id}
+                                                    </span>
+                                                    <h3 className="text-h4 text-gray-900">
                                                         {brief.title}
                                                     </h3>
-                                                    <StatusBadge status={brief.status} />
-                                                    {brief.aiGenerated && (
-                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
-                                                            <Sparkles className="w-3 h-3 mr-1" />
-                                                            AI Generated
-                                                        </span>
-                                                    )}
+                                                    <Badge variant={getStatusBadgeVariant(brief.status)}>
+                                                        {formatStatus(brief.status)}
+                                                    </Badge>
                                                 </div>
-                                                <p className="text-muted-foreground line-clamp-2 max-w-3xl leading-relaxed">
+
+                                                {/* Description */}
+                                                <p className="text-body-md text-gray-600 line-clamp-2">
                                                     {brief.description}
                                                 </p>
 
-                                                <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground pt-2">
-                                                    <div className="flex items-center gap-2 bg-muted/40 px-2 py-1 rounded-md">
-                                                        <FileText className="h-4 w-4" />
-                                                        <span className="font-medium">{brief.category}</span>
+                                                {/* Metadata */}
+                                                <div className="flex items-center gap-6 text-body-sm text-gray-500">
+                                                    <div className="flex items-center gap-2">
+                                                        <Building2 className="h-4 w-4" />
+                                                        <span>{brief.companyName || "Company"}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Package className="h-4 w-4" />
+                                                        <span>{brief.category}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <Calendar className="h-4 w-4" />
                                                         <span>{brief.timeline}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <DollarSign className="h-4 w-4" />
-                                                        <span>${brief.budget.min.toLocaleString()} - {brief.budget.max.toLocaleString()}</span>
+                                                        <Wallet className="h-4 w-4" />
+                                                        <span>
+                                                            {brief.budget.currency} {brief.budget.min.toLocaleString()} - {brief.budget.max.toLocaleString()}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className="flex flex-col items-end gap-2 ml-4">
-                                                <Button variant="ghost" size="icon" className="hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <MoreVertical className="h-4 w-4" />
+                                            {/* Action Buttons */}
+                                            <div className="flex gap-2 ml-4">
+                                                <Button variant="secondary" size="md">
+                                                    <MessageSquare className="mr-2 h-4 w-4" />
+                                                    Chat
                                                 </Button>
-                                                <span className="text-xs text-muted-foreground mt-auto">
-                                                    Updated {new Date(brief.updatedAt).toLocaleDateString()}
-                                                </span>
+                                                <Link to={`/briefs/${brief.id}`}>
+                                                    <Button variant="primary" size="md">
+                                                        View
+                                                    </Button>
+                                                </Link>
                                             </div>
                                         </div>
-                                    </CardContent>
-                                </Link>
+
+                                        {/* Info Banner (conditionally shown) */}
+                                        {brief.status === "matched" && (
+                                            <div className="flex items-start gap-3 p-3 bg-primary-50 border border-primary-200 rounded-md">
+                                                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-primary-600 flex items-center justify-center mt-0.5">
+                                                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-body-sm text-gray-700">
+                                                        The brand has chosen another manufacturer for this brief. You can still view the proposal for reference or continue submitting proposals to other briefs.
+                                                    </p>
+                                                    <button className="text-body-sm font-medium text-primary-600 hover:text-primary-700 mt-1">
+                                                        Archive Proposal
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </CardContent>
                             </Card>
                         ))
                     )}
                 </div>
+
+                {/* Pagination */}
+                {filteredBriefs.length > itemsPerPage && (
+                    <div className="flex justify-between items-center mt-4">
+                        <p className="text-body-sm text-gray-600">
+                            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredBriefs.length)} of {filteredBriefs.length} results
+                        </p>
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        />
+                    </div>
+                )}
             </div>
         </DashboardLayout>
     );

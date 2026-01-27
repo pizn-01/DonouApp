@@ -25,9 +25,67 @@ interface Message {
 }
 
 // Mock Data
-const CONVERSATIONS: Conversation[] = [];
+const CONVERSATIONS: Conversation[] = [
+    {
+        id: "1",
+        name: "Portugal Textile S.A.",
+        avatar: "PT",
+        lastMessage: "The samples will be shipped tomorrow via DHL.",
+        time: "10:30 AM",
+        unread: 1,
+        online: true,
+    },
+    {
+        id: "2",
+        name: "EcoFabrics Ltd",
+        avatar: "EF",
+        lastMessage: "Could you clarify the GSM requirement for the organic cotton?",
+        time: "Yesterday",
+        unread: 0,
+        online: false,
+    },
+    {
+        id: "3",
+        name: "Vietnam Garment Co.",
+        avatar: "VG",
+        lastMessage: "Proposal sent! Let us know what you think.",
+        time: "Yesterday",
+        unread: 0,
+        online: false,
+    },
+];
 
-const MESSAGES: Message[] = [];
+const MESSAGES: Message[] = [
+    {
+        id: "1",
+        senderId: "them",
+        text: "Hello! We reviewed your brief for the Summer Collection.",
+        time: "10:00 AM",
+        isMe: false,
+    },
+    {
+        id: "2",
+        senderId: "me",
+        text: "Great! Do you have experience with recycled polyester?",
+        time: "10:05 AM",
+        isMe: true,
+        status: "read",
+    },
+    {
+        id: "3",
+        senderId: "them",
+        text: "Yes, we specialize in sustainable synthetic blends. We can send swatches.",
+        time: "10:15 AM",
+        isMe: false,
+    },
+    {
+        id: "4",
+        senderId: "them",
+        text: "The samples will be shipped tomorrow via DHL.",
+        time: "10:30 AM",
+        isMe: false,
+    },
+];
 
 export default function MessagesPage() {
     const [selectedChat, setSelectedChat] = useState<Conversation | null>(null);

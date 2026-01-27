@@ -1,20 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import { env } from './env';
 
-// Client for authenticated user operations
+// Create Supabase client for backend operations
+// Using service role key to bypass RLS for server-side operations
 export const supabase = createClient(
-    env.SUPABASE_URL,
-    env.SUPABASE_ANON_KEY,
-    {
-        auth: {
-            autoRefreshToken: true,
-            persistSession: false,
-        },
-    }
-);
-
-// Admin client for server-side operations (bypasses RLS)
-export const supabaseAdmin = createClient(
     env.SUPABASE_URL,
     env.SUPABASE_SERVICE_ROLE_KEY,
     {
@@ -25,5 +14,17 @@ export const supabaseAdmin = createClient(
     }
 );
 
-export type SupabaseClient = typeof supabase;
-export type SupabaseAdminClient = typeof supabaseAdmin;
+// Create Supabase client for authentication operations
+// Using anon key for auth operations that respect RLS
+export const supabaseAuth = createClient(
+    env.SUPABASE_URL,
+    env.SUPABASE_ANON_KEY,
+    {
+        auth: {
+            autoRefreshToken: true,
+            persistSession: true,
+        },
+    }
+);
+
+export default supabase;

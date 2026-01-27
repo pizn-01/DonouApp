@@ -1,47 +1,42 @@
-import dotenv from 'dotenv';
 import { z } from 'zod';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
 const envSchema = z.object({
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-    PORT: z.string().default('3000').transform(Number),
+    PORT: z.string().default('3000'),
 
-    // Supabase
-    SUPABASE_URL: z.string().url(),
-    SUPABASE_ANON_KEY: z.string().min(1),
-    SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+    // Supabase Configuration
+    SUPABASE_URL: z.string().url('SUPABASE_URL must be a valid URL'),
+    SUPABASE_ANON_KEY: z.string().min(1, 'SUPABASE_ANON_KEY is required'),
+    SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, 'SUPABASE_SERVICE_ROLE_KEY is required'),
 
-    // JWT
-    JWT_SECRET: z.string().min(32),
+    // JWT Configuration
+    JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
     JWT_EXPIRES_IN: z.string().default('15m'),
     JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
 
-    // OpenAI
-    OPENAI_API_KEY: z.string().min(1),
-    OPENAI_MODEL: z.string().default('gpt-4'),
-
-    // CORS
-    CORS_ORIGIN: z.string().default('http://localhost:5173'),
-
-    // Rate Limiting
-    RATE_LIMIT_WINDOW_MS: z.string().default('900000').transform(Number),
-    RATE_LIMIT_MAX_REQUESTS: z.string().default('100').transform(Number),
+    // Security
+    BCRYPT_SALT_ROUNDS: z.string().default('10'),
 });
 
-const parseEnv = () => {
+export type EnvConfig = z.infer<typeof envSchema>;
+
+// Validate and export environment variables
+function validateEnv(): EnvConfig {
     try {
         return envSchema.parse(process.env);
     } catch (error) {
         if (error instanceof z.ZodError) {
-            const missing = error.issues.map((issue) => issue.path.join('.')).join(', ');
-            console.error(`❌ Missing or invalid environment variables: ${missing}`);
-            console.error('Please check your .env file against .env.example');
+            console.error('❌ Environment variable validation failed:');
+            error.errors.forEach((err) => {
+                console.error(`  - ${err.path.join('.')}: ${err.message}`);
+            });
+            process.exit(1);
         }
         throw error;
     }
-};
+}
 
-export const env = parseEnv();
-
-export type Env = z.infer<typeof envSchema>;
+export const env = validateEnv();

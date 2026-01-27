@@ -9,7 +9,13 @@ import CreateBriefPage from './pages/briefs/CreateBriefPage';
 import SettingsPage from './pages/settings/SettingsPage';
 import MessagesPage from './pages/messages/MessagesPage';
 import OnboardingPage from './pages/onboarding/OnboardingPage';
+// Manufacturer Pages
+import ManufacturerDashboardPage from './pages/manufacturer/DashboardPage';
+import BriefsMarketplacePage from './pages/manufacturer/BriefsMarketplacePage';
+import BriefDetailPage from './pages/manufacturer/BriefDetailPage';
+import SubmitProposalPage from './pages/manufacturer/SubmitProposalPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import BrandDashboardPage from './pages/dashboard/BrandDashboardPage';
 
 function App() {
   return (
@@ -33,7 +39,17 @@ function App() {
           }
         />
 
-        {/* Dashboard Routes */}
+        {/* Dashboard Routes - Brand */}
+        <Route
+          path="/brand/dashboard"
+          element={
+            <ProtectedRoute>
+              <BrandDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Generic Dashboard (Redirects based on role) */}
         <Route
           path="/dashboard"
           element={
@@ -42,6 +58,42 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* Manufacturer Routes */}
+        <Route
+          path="/manufacturer/dashboard"
+          element={
+            <ProtectedRoute>
+              <ManufacturerDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manufacturer/marketplace"
+          element={
+            <ProtectedRoute>
+              <BriefsMarketplacePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manufacturer/briefs/:id"
+          element={
+            <ProtectedRoute>
+              <BriefDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manufacturer/briefs/:id/proposal"
+          element={
+            <ProtectedRoute>
+              <SubmitProposalPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Common Routes */}
         <Route
           path="/briefs"
           element={

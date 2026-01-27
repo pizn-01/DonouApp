@@ -11,7 +11,7 @@ import { registerSchema, type RegisterInput } from "./types";
 import { cn } from "@/lib/utils";
 import axios from "axios";
 
-const API_URL = "http://localhost:3000/api/v1";
+const API_URL = "http://localhost:3000/api";
 
 export function RegisterForm() {
     const navigate = useNavigate();
@@ -40,10 +40,22 @@ export function RegisterForm() {
         setError("");
 
         try {
-            await axios.post(`${API_URL}/auth/register`, data);
+            // Transform the form data to match backend API expectations
+            const registerData = {
+                email: data.email,
+                password: data.password,
+                full_name: `${data.firstName} ${data.lastName}`,
+                role: data.role.toLowerCase() as "brand" | "manufacturer",
+                // Optional: you might want to store companyName separately via onboarding later
+            };
+
+            console.log("Sending registration data:", registerData);
+            await axios.post(`${API_URL}/auth/signup`, registerData);
             navigate("/auth/login");
         } catch (err: any) {
-            setError(err.response?.data?.error?.message || "Registration failed. Please try again.");
+            console.error("Registration error:", err.response?.data);
+            const errorMsg = err.response?.data?.message || err.response?.data?.error || "Registration failed. Please try again.";
+            setError(errorMsg);
         } finally {
             setIsLoading(false);
         }

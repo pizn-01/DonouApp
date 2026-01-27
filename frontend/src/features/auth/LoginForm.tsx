@@ -11,7 +11,7 @@ import { loginSchema, type LoginInput } from "./types";
 import axios from "axios";
 
 // Helper for API base - should go in lib/api.ts later
-const API_URL = "http://localhost:3000/api/v1";
+const API_URL = "http://localhost:3000/api";
 
 export function LoginForm() {
     const navigate = useNavigate();
@@ -40,7 +40,7 @@ export function LoginForm() {
 
             navigate("/dashboard");
         } catch (err: any) {
-            setError(err.response?.data?.error?.message || "Invalid credentials. Please try again.");
+            setError(err.response?.data?.message || "Invalid credentials. Please try again.");
         } finally {
             setIsLoading(false);
         }
