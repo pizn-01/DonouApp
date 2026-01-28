@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Building2, DollarSign, Calendar, Package, AlertCircle } from "lucide-react";
+import { Building2, Package } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Textarea } from "./ui/textarea";

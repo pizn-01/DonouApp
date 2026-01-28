@@ -57,30 +57,53 @@ export class OnboardingService {
             if (updateError || !updatedProfile) {
                 throw new Error('Failed to update brand profile');
             }
+        } else {
+            // Create new brand profile
+            const { data: newProfile, error: insertError } = await supabase
+                .from('brand_profiles')
+                .insert({
+                    user_id: userId,
+                    company_name: data.company_name,
+                    industry: data.industry || null,
+                    company_size: data.company_size || null,
+                    website: data.website || null,
+                    description: data.description || null,
+                    logo_url: data.logo_url || null,
+                })
+                .select()
+                .single();
 
-            return updatedProfile as BrandProfile;
+            if (insertError || !newProfile) {
+                throw new Error('Failed to create brand profile');
+            }
         }
 
-        // Create new brand profile
-        const { data: newProfile, error: insertError } = await supabase
-            .from('brand_profiles')
-            .insert({
-                user_id: userId,
-                company_name: data.company_name,
-                industry: data.industry || null,
-                company_size: data.company_size || null,
-                website: data.website || null,
-                description: data.description || null,
-                logo_url: data.logo_url || null,
+        // Mark user onboarding as completed
+        const { error: updateOnboardingError } = await supabase
+            .from('user_profiles')
+            .update({
+                onboarding_completed: true,
+                onboarding_completed_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
             })
-            .select()
+            .eq('user_id', userId);
+
+        if (updateOnboardingError) {
+            throw new Error('Failed to mark onboarding as completed');
+        }
+
+        // Fetch and return the updated brand profile
+        const { data: finalProfile, error: fetchError } = await supabase
+            .from('brand_profiles')
+            .select('*')
+            .eq('user_id', userId)
             .single();
 
-        if (insertError || !newProfile) {
-            throw new Error('Failed to create brand profile');
+        if (fetchError || !finalProfile) {
+            throw new Error('Failed to retrieve brand profile');
         }
 
-        return newProfile as BrandProfile;
+        return finalProfile as BrandProfile;
     }
 
     /**
@@ -136,34 +159,55 @@ export class OnboardingService {
             if (updateError || !updatedProfile) {
                 throw new Error('Failed to update manufacturer profile');
             }
+        } else {
+            // Create new manufacturer profile (verification_status defaults to 'pending' in DB)
+            const { error: insertError } = await supabase
+                .from('manufacturer_profiles')
+                .insert({
+                    user_id: userId,
+                    company_name: data.company_name,
+                    capabilities: data.capabilities,
+                    production_capacity: data.production_capacity || null,
+                    factory_location: data.factory_location || null,
+                    certifications: data.certifications || [],
+                    year_established: data.year_established || null,
+                    employee_count: data.employee_count || null,
+                    website: data.website || null,
+                    description: data.description || null,
+                    logo_url: data.logo_url || null,
+                });
 
-            return updatedProfile as ManufacturerProfile;
+            if (insertError) {
+                throw new Error('Failed to create manufacturer profile');
+            }
         }
 
-        // Create new manufacturer profile (verification_status defaults to 'pending' in DB)
-        const { data: newProfile, error: insertError } = await supabase
-            .from('manufacturer_profiles')
-            .insert({
-                user_id: userId,
-                company_name: data.company_name,
-                capabilities: data.capabilities,
-                production_capacity: data.production_capacity || null,
-                factory_location: data.factory_location || null,
-                certifications: data.certifications || [],
-                year_established: data.year_established || null,
-                employee_count: data.employee_count || null,
-                website: data.website || null,
-                description: data.description || null,
-                logo_url: data.logo_url || null,
+        // Mark user onboarding as completed
+        const { error: updateOnboardingError } = await supabase
+            .from('user_profiles')
+            .update({
+                onboarding_completed: true,
+                onboarding_completed_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
             })
-            .select()
+            .eq('user_id', userId);
+
+        if (updateOnboardingError) {
+            throw new Error('Failed to mark onboarding as completed');
+        }
+
+        // Fetch and return the updated manufacturer profile
+        const { data: finalProfile, error: fetchError } = await supabase
+            .from('manufacturer_profiles')
+            .select('*')
+            .eq('user_id', userId)
             .single();
 
-        if (insertError || !newProfile) {
-            throw new Error('Failed to create manufacturer profile');
+        if (fetchError || !finalProfile) {
+            throw new Error('Failed to retrieve manufacturer profile');
         }
 
-        return newProfile as ManufacturerProfile;
+        return finalProfile as ManufacturerProfile;
     }
 
     /**

@@ -18,7 +18,7 @@ export interface LoginRequest {
 }
 
 export interface AuthResponse {
-    user: UserProfile;
+    user: UserProfile & { email: string };
     accessToken: string;
     refreshToken: string;
 }
@@ -48,6 +48,8 @@ export interface UserProfile {
     full_name: string;
     phone: string | null;
     avatar_url: string | null;
+    onboarding_completed: boolean;
+    onboarding_completed_at: string | null;
     created_at: string;
     updated_at: string;
     deleted_at: string | null;

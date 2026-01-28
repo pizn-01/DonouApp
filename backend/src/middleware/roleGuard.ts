@@ -23,7 +23,7 @@ export const requireBrand = (
         return;
     }
 
-    if (user.role !== UserRole.BRAND) {
+    if (user.role !== 'brand') {
         res.status(403).json({
             success: false,
             message: 'This action requires Brand role'
@@ -52,7 +52,7 @@ export const requireManufacturer = (
         return;
     }
 
-    if (user.role !== UserRole.MANUFACTURER) {
+    if (user.role !== 'manufacturer') {
         res.status(403).json({
             success: false,
             message: 'This action requires Manufacturer role'

@@ -79,11 +79,15 @@ export function useAuth() {
     const logout = async () => {
         try {
             await authService.logout();
+        } catch (error) {
+            console.error("Logout API call failed, but continuing with local cleanup", error);
         } finally {
             setUser(null);
             localStorage.removeItem('user');
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
+            // Redirect to login page
+            window.location.href = '/auth/login';
         }
     };
 

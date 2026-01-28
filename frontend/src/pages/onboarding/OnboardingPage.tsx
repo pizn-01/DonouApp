@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { AuthLayout } from "@/components/layout/AuthLayout";
 import type { User } from "@/features/auth/types";
 import axios from "axios";
+import { authService } from '@/services/auth.service';
 
 const API_URL = "http://localhost:3000/api";
 
@@ -93,7 +94,7 @@ export default function OnboardingPage() {
             };
 
             await axios.post(`${API_URL}/onboarding/brand`, payload, {
-                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+                headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` }
             });
             handleSuccess();
         } catch (err: unknown) {
@@ -128,7 +129,7 @@ export default function OnboardingPage() {
             };
 
             await axios.post(`${API_URL}/onboarding/manufacturer`, payload, {
-                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+                headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` }
             });
             handleSuccess();
         } catch (err: unknown) {
@@ -140,19 +141,33 @@ export default function OnboardingPage() {
         }
     };
 
-    const handleSuccess = () => {
-        // Update local user
-        if (user) {
-            const updatedUser = { ...user, onboardingCompleted: true };
-            localStorage.setItem("user", JSON.stringify(updatedUser));
-
-            // Redirect based on role
-            const isBrand = user.role?.toLowerCase() === 'brand';
-            if (isBrand) {
-                navigate("/brand/dashboard");
-            } else {
-                navigate("/manufacturer/dashboard");
+    const handleSuccess = async () => {
+        try {
+            // 1. Optimistic Update: Assume backend success implies data is updated
+            if (user) {
+                const updatedUser = { ...user, onboarding_completed: true };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                setUser(updatedUser);
             }
+
+            // 2. Try to get fresh full profile (async, don't block too long)
+            try {
+                const freshUser = await authService.me();
+                localStorage.setItem('user', JSON.stringify(freshUser));
+            } catch (err) {
+                console.warn("Background fetch of fresh user failed, relying on optimistic update", err);
+            }
+
+            // 3. Force navigation with hard reload to ensure ProtectedRoute sees updated state
+            const role = user?.role?.toLowerCase() || '';
+            const dashboardPath = role === 'brand' ? '/brand/dashboard' : '/manufacturer/dashboard';
+
+            // Use window.location.href for a hard navigation that ensures state sync
+            window.location.href = dashboardPath;
+        } catch (err) {
+            console.error("Navigation error in handleSuccess", err);
+            // Fallback
+            window.location.href = '/dashboard';
         }
     };
 

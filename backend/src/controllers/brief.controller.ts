@@ -102,6 +102,50 @@ export class BriefController {
     }
 
     /**
+     * Get dashboard statistics
+     * GET /api/briefs/stats
+     */
+    async getStats(req: AuthenticatedRequest, res: Response): Promise<void> {
+        try {
+            const user = req.user!;
+
+            // Get brand profile ID
+            const { supabase } = await import('../config/database');
+            const { data: brandProfile } = await supabase
+                .from('brand_profiles')
+                .select('id')
+                .eq('user_id', user.id)
+                .single();
+
+            // If no brand profile exists yet, return empty stats
+            if (!brandProfile) {
+                res.json({
+                    success: true,
+                    data: {
+                        totalBriefs: 0,
+                        activeBriefs: 0,
+                        pendingProposals: 0,
+                        acceptedProposals: 0
+                    }
+                });
+                return;
+            }
+
+            const stats = await briefService.getBrandStats(brandProfile.id);
+
+            res.json({
+                success: true,
+                data: stats
+            });
+        } catch (error: any) {
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Failed to fetch statistics'
+            });
+        }
+    }
+
+    /**
      * Get a single brief by ID
      * GET /api/briefs/:id
      */

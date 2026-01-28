@@ -34,26 +34,47 @@ export default function BrandDashboardPage() {
         acceptedProposals: 0
     });
 
+    const [error, setError] = useState<string | null>(null);
+
+    const loadDashboardData = async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+            // Fetch Stats
+            const statsData = await briefService.getBrandStats();
+            setStats(statsData);
+
+            // Fetch Recent Briefs (limit 5)
+            const briefsResponse = await briefService.getAll({ limit: 5 });
+            setRecentBriefs(briefsResponse.data);
+        } catch (err) {
+            console.error("Failed to load dashboard data:", err);
+            setError("Failed to load dashboard data. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const loadDashboardData = async () => {
-            try {
-                setIsLoading(true);
-                // Fetch Stats
-                const statsData = await briefService.getBrandStats();
-                setStats(statsData);
-
-                // Fetch Recent Briefs (limit 5)
-                const briefsResponse = await briefService.getAll({ limit: 5 });
-                setRecentBriefs(briefsResponse.data);
-            } catch (error) {
-                console.error("Failed to load dashboard data:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
         loadDashboardData();
     }, []);
+
+    if (error) {
+        return (
+            <DashboardLayout>
+                <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-8">
+                    <div className="bg-red-50 text-red-600 p-4 rounded-full mb-4">
+                        <FileText className="h-8 w-8" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Something went wrong</h3>
+                    <p className="text-gray-500 mb-6 max-w-md">{error}</p>
+                    <Button onClick={loadDashboardData} variant="outline">
+                        Try Again
+                    </Button>
+                </div>
+            </DashboardLayout>
+        );
+    }
 
     return (
         <DashboardLayout>

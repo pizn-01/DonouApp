@@ -1,8 +1,9 @@
 import axios, { AxiosError } from 'axios';
-import { API_ENDPOINTS } from '../config/api';
+import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
 
 // Create axios instance with default config
 export const apiClient = axios.create({
+    baseURL: API_BASE_URL,
     withCredentials: false, // Not using cookies, using JWT in headers
     headers: {
         'Content-Type': 'application/json',

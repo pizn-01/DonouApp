@@ -11,7 +11,10 @@ export interface User {
     avatar_url: string | null;
     created_at: string;
     updated_at: string;
-    email?: string;
+    deleted_at: string | null;
+    onboarding_completed: boolean;
+    onboarding_completed_at: string | null;
+    email: string; // Changed from optional to required
 }
 
 export interface AuthResponse {
@@ -42,7 +45,7 @@ export const authService = {
         const response = await apiClient.post(API_ENDPOINTS.AUTH.SIGNUP, data);
         const { user, accessToken, refreshToken } = response.data.data;
 
-        // Store tokens and user in localStorage
+        // Store tokens and user in localStorage using consistent keys
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.setItem('user', JSON.stringify(user));
@@ -57,7 +60,7 @@ export const authService = {
         const response = await apiClient.post(API_ENDPOINTS.AUTH.LOGIN, data);
         const { user, accessToken, refreshToken } = response.data.data;
 
-        // Store tokens and user in localStorage
+        // Store tokens and user in localStorage using consistent keys
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.setItem('user', JSON.stringify(user));

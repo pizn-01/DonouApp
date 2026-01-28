@@ -29,7 +29,7 @@ export function RegisterForm() {
     } = useForm<RegisterInput>({
         resolver: zodResolver(registerSchema) as any,
         defaultValues: {
-            role: "BRAND",
+            role: "brand",
         },
     });
 
@@ -73,11 +73,11 @@ export function RegisterForm() {
                             <div
                                 className={cn(
                                     "cursor-pointer rounded-xl border-2 p-4 flex flex-col items-center justify-center gap-2 transition-all hover:bg-muted/50",
-                                    selectedRole === "BRAND" ? "border-primary bg-primary/5" : "border-muted"
+                                    selectedRole === "brand" ? "border-primary bg-primary/5" : "border-muted"
                                 )}
-                                onClick={() => setValue("role", "BRAND")}
+                                onClick={() => setValue("role", "brand")}
                             >
-                                <Building2 className={cn("h-8 w-8", selectedRole === "BRAND" ? "text-primary" : "text-muted-foreground")} />
+                                <Building2 className={cn("h-8 w-8", selectedRole === "brand" ? "text-primary" : "text-muted-foreground")} />
                                 <div className="text-center">
                                     <div className="font-semibold">Brand</div>
                                     <div className="text-[10px] text-muted-foreground">Looking for manufacturers</div>
@@ -86,11 +86,11 @@ export function RegisterForm() {
                             <div
                                 className={cn(
                                     "cursor-pointer rounded-xl border-2 p-4 flex flex-col items-center justify-center gap-2 transition-all hover:bg-muted/50",
-                                    selectedRole === "MANUFACTURER" ? "border-primary bg-primary/5" : "border-muted"
+                                    selectedRole === "manufacturer" ? "border-primary bg-primary/5" : "border-muted"
                                 )}
-                                onClick={() => setValue("role", "MANUFACTURER")}
+                                onClick={() => setValue("role", "manufacturer")}
                             >
-                                <Factory className={cn("h-8 w-8", selectedRole === "MANUFACTURER" ? "text-primary" : "text-muted-foreground")} />
+                                <Factory className={cn("h-8 w-8", selectedRole === "manufacturer" ? "text-primary" : "text-muted-foreground")} />
                                 <div className="text-center">
                                     <div className="font-semibold">Manufacturer</div>
                                     <div className="text-[10px] text-muted-foreground">Looking for clients</div>
@@ -199,7 +199,7 @@ export function RegisterForm() {
 
                     {error && <p className="text-sm text-red-500 text-center">{error}</p>}
 
-                    <Button className="h-11 text-base w-full mt-2" disabled={isLoading}>
+                    <Button type="submit" className="h-11 text-base w-full mt-2" disabled={isLoading}>
                         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Create Account
                     </Button>

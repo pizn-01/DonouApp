@@ -17,17 +17,15 @@ export default function ManufacturerDashboardPage() {
                 // Parallel fetch for proposals and matches
                 const [proposalsRes, matchesRes] = await Promise.allSettled([
                     import('../../services/proposal.service').then(({ proposalService }) => proposalService.getMyProposals()),
-                    import('../../services/matching.service').then(({ matchingService }) => matchingService.getRecommendations())
+                    import('../../services/matching.service').then(({ matchingService }) => matchingService.getRecommendations({}))
                 ]);
 
-                let totalProposals = 0;
                 let activeProposals = 0;
                 let newMatches = 0;
                 let briefsList: any[] = [];
 
                 if (proposalsRes.status === 'fulfilled') {
                     const proposals = proposalsRes.value;
-                    totalProposals = proposals.length;
                     activeProposals = proposals.filter((p: any) => p.status !== 'REJECTED' && p.status !== 'WITHDRAWN').length;
                 }
 
@@ -82,9 +80,9 @@ export default function ManufacturerDashboardPage() {
             <div className="container mx-auto p-6 space-y-6">
                 {/* Header */}
                 <div>
-                    <h1 className="text-2xl font-semibold text-gray-900">Manufacture Dashboard</h1>
+                    <h1 className="text-2xl font-semibold text-gray-900">Manufacturer Dashboard</h1>
                     <p className="text-sm text-gray-500 mt-1">
-                        Review invitations and manage your proposals
+                        Invitations, matches and your active proposals in one place.
                     </p>
                 </div>
 
@@ -151,8 +149,8 @@ export default function ManufacturerDashboardPage() {
 
                         {isEmpty ? (
                             <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <FileText className="h-8 w-8 text-gray-400" />
+                                <div className="w-40 h-40 mx-auto mb-4">
+                                    <img src="/assets/manufacturer/02_Dashboard_Filled.png" alt="No Invites" className="w-full h-full object-contain" />
                                 </div>
                                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No Invites Yet</h3>
                                 <p className="text-sm text-gray-500 mb-4 max-w-sm mx-auto">

@@ -18,7 +18,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { BriefStatus, type Brief } from "@/features/briefs/types";
-import { cn } from "@/lib/utils";
+
 
 const MOCK_BRIEFS: Brief[] = [
     {
@@ -33,7 +33,6 @@ const MOCK_BRIEFS: Brief[] = [
         createdAt: "2025-01-26T10:00:00Z",
         updatedAt: "2025-01-26T10:00:00Z",
         brandId: "1",
-        companyName: "Evergreensuppl.co",
         requirements: {
             productType: "Supplements",
             quantity: 1000,
@@ -53,7 +52,6 @@ const MOCK_BRIEFS: Brief[] = [
         createdAt: "2025-01-26T10:00:00Z",
         updatedAt: "2025-01-26T10:00:00Z",
         brandId: "1",
-        companyName: "Evergreensuppl.co",
         requirements: {
             productType: "Supplements",
             quantity: 1000,
@@ -63,7 +61,7 @@ const MOCK_BRIEFS: Brief[] = [
     {
         id: "RB1234530",
         title: "Premium Vitamin D3 Supplement",
-        status: "matched" as BriefStatus,
+        status: BriefStatus.COMPLETED,
         description: "This brief is being created with AI assistance. The AI will help you fill in the details.",
         category: "Dietary Supplements",
         budget: { min: 1000, max: 100000, currency: "USD" },
@@ -72,7 +70,6 @@ const MOCK_BRIEFS: Brief[] = [
         createdAt: "2025-01-26T10:00:00Z",
         updatedAt: "2025-01-26T10:00:00Z",
         brandId: "1",
-        companyName: "Evergreensuppl.co",
         requirements: {
             productType: "Supplements",
             quantity: 1000,
@@ -82,7 +79,7 @@ const MOCK_BRIEFS: Brief[] = [
     {
         id: "RB1234531",
         title: "Premium Vitamin D3 Supplement",
-        status: "proposal-received" as BriefStatus,
+        status: BriefStatus.IN_PROGRESS,
         description: "The brand has chosen another manufacturer for this brief. You can still view the proposal for reference or continue submitting proposals to other briefs.",
         category: "Dietary Supplements",
         budget: { min: 1000, max: 100000, currency: "USD" },
@@ -91,7 +88,6 @@ const MOCK_BRIEFS: Brief[] = [
         createdAt: "2025-01-26T10:00:00Z",
         updatedAt: "2025-01-26T10:00:00Z",
         brandId: "1",
-        companyName: "Evergreensuppl.co",
         requirements: {
             productType: "Supplements",
             quantity: 1000,
@@ -294,7 +290,7 @@ export default function BriefsPage() {
                                                 <div className="flex items-center gap-6 text-body-sm text-gray-500">
                                                     <div className="flex items-center gap-2">
                                                         <Building2 className="h-4 w-4" />
-                                                        <span>{brief.companyName || "Company"}</span>
+                                                        <span>{brief.brandId || "Company"}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <Package className="h-4 w-4" />
@@ -328,7 +324,7 @@ export default function BriefsPage() {
                                         </div>
 
                                         {/* Info Banner (conditionally shown) */}
-                                        {brief.status === "matched" && (
+                                        {brief.status === BriefStatus.COMPLETED && (
                                             <div className="flex items-start gap-3 p-3 bg-primary-50 border border-primary-200 rounded-md">
                                                 <div className="flex-shrink-0 w-5 h-5 rounded-full bg-primary-600 flex items-center justify-center mt-0.5">
                                                     <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">

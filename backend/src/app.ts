@@ -16,7 +16,7 @@ app.use(
     cors({
         origin: env.NODE_ENV === 'production'
             ? ['https://yourdomain.com'] // Replace with your frontend URL
-            : ['http://localhost:5173', 'http://localhost:3000'],
+            : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'],
         credentials: true,
     })
 );
@@ -30,7 +30,7 @@ app.use('/uploads', express.static('uploads'));
 
 // Request logging in development
 if (env.NODE_ENV === 'development') {
-    app.use((req, res, next) => {
+    app.use((req, _res, next) => {
         console.log(`${req.method} ${req.path}`);
         next();
     });
@@ -40,7 +40,7 @@ if (env.NODE_ENV === 'development') {
 app.use('/api', routes);
 
 // Root endpoint
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
     res.json({
         message: 'DonauApp Backend API',
         version: '1.0.0',
@@ -49,7 +49,7 @@ app.get('/', (req, res) => {
 });
 
 // 404 handler
-app.use((req, res) => {
+app.use((_req, res) => {
     res.status(404).json({
         success: false,
         message: 'Route not found',

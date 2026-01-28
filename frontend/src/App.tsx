@@ -43,7 +43,7 @@ function App() {
         <Route
           path="/brand/dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["brand"]}>
               <BrandDashboardPage />
             </ProtectedRoute>
           }
@@ -63,7 +63,7 @@ function App() {
         <Route
           path="/manufacturer/dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["manufacturer"]}>
               <ManufacturerDashboardPage />
             </ProtectedRoute>
           }
@@ -71,7 +71,7 @@ function App() {
         <Route
           path="/manufacturer/marketplace"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["manufacturer"]}>
               <BriefsMarketplacePage />
             </ProtectedRoute>
           }

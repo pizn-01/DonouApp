@@ -6,10 +6,10 @@ export const loginSchema = z.object({
 });
 
 export const registerSchema = z.object({
-    role: z.enum(["BRAND", "MANUFACTURER"]).default("BRAND"),
-    firstName: z.string().min(2, "First name is required"),
-    lastName: z.string().min(2, "Last name is required"),
-    companyName: z.string().min(2, "Organization name is required"),
+    role: z.enum(["brand", "manufacturer"]).default("brand"),
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    companyName: z.string().optional(),
     email: z.string().email("Invalid email address"),
     password: z.string()
         .min(8, "Password must be at least 8 characters")
@@ -17,6 +17,7 @@ export const registerSchema = z.object({
         .regex(/[a-z]/, "Must contain at least one lowercase letter")
         .regex(/[0-9]/, "Must contain at least one number"),
     confirmPassword: z.string(),
+    phone: z.string().optional(),
     terms: z.boolean().refine((val) => val === true, {
         message: "You must accept the terms and conditions",
     }),
@@ -30,16 +31,21 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 
 export interface User {
     id: string;
+    user_id: string;
     email: string;
-    firstName: string;
-    lastName: string;
-    role: "BRAND" | "MANUFACTURER" | "ADMIN";
-    emailVerified: boolean;
-    onboardingCompleted: boolean;
+    full_name: string;
+    phone: string | null;
+    avatar_url: string | null;
+    role: "brand" | "manufacturer";
+    onboarding_completed: boolean;
+    onboarding_completed_at: string | null;
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
 }
 
 export interface AuthResponse {
     user: User;
     accessToken: string;
-    expiresAt: number;
+    refreshToken: string;
 }

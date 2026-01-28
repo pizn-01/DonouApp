@@ -34,9 +34,10 @@ export function LoginForm() {
         try {
             const response = await axios.post(`${API_URL}/auth/login`, data);
 
-            // Store token
-            localStorage.setItem("token", response.data.data.accessToken);
-            localStorage.setItem("user", JSON.stringify(response.data.data.user));
+            // Store tokens using consistent key names
+            localStorage.setItem('accessToken', response.data.data.accessToken);
+            localStorage.setItem('refreshToken', response.data.data.refreshToken);
+            localStorage.setItem('user', JSON.stringify(response.data.data.user));
 
             navigate("/dashboard");
         } catch (err: any) {

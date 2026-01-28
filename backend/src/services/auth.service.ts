@@ -60,7 +60,10 @@ export class AuthService {
         const refreshToken = generateRefreshToken(authData.user.id);
 
         return {
-            user: profile as UserProfile,
+            user: {
+                ...profile,
+                email,
+            },
             accessToken,
             refreshToken,
         };
@@ -98,7 +101,10 @@ export class AuthService {
         const refreshToken = generateRefreshToken(authData.user.id);
 
         return {
-            user: profile as UserProfile,
+            user: {
+                ...profile,
+                email,
+            },
             accessToken,
             refreshToken,
         };

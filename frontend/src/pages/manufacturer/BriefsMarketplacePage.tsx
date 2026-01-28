@@ -91,9 +91,9 @@ export default function BriefsMarketplacePage() {
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-h2 text-gray-900">Available My Briefs</h1>
+                        <h1 className="text-h2 text-gray-900">My Briefs Marketplace</h1>
                         <p className="text-body-md text-gray-500 mt-1">
-                            Browse and review product briefs from potential clients
+                            Browse open product briefs from brands and submit proposals.
                         </p>
                     </div>
                 </div>
@@ -170,7 +170,9 @@ export default function BriefsMarketplacePage() {
                 <div className="flex flex-col gap-4">
                     {paginatedBriefs.length === 0 ? (
                         <div className="text-center py-16 border-2 border-dashed rounded-lg bg-gray-50">
-                            <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                            <div className="w-36 h-36 mx-auto mb-4">
+                                <img src="/assets/manufacturer/02_My%20Brief_All%20briefs.png" alt="No Briefs" className="w-full h-full object-contain" />
+                            </div>
                             <h3 className="text-h4 text-gray-900 mb-2">No briefs found</h3>
                             <p className="text-body-md text-gray-500">
                                 {searchTerm

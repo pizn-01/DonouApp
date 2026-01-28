@@ -11,7 +11,6 @@ import {
     Clock,
     DollarSign,
     Package,
-    AlertCircle,
     File,
     MessageSquare,
     Building2
@@ -72,16 +71,19 @@ export default function BriefDetailPage() {
                         onClick={() => navigate('/manufacturer/marketplace')}
                         className="hover:text-gray-700"
                     >
-                        Product Briefs
+                        My Briefs Marketplace
                     </button>
                     <ChevronRight className="h-4 w-4" />
-                    <span className="text-gray-900">Premium Vitamin D3 Supplement</span>
+                    <span className="text-gray-900">{brief.title || 'Brief Detail'}</span>
                 </div>
 
                 {/* Header */}
                 <div className="flex items-start justify-between">
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">
+                            <div className="w-12 h-12">
+                                <img src="/assets/manufacturer/03_Brief%20Detail_Overview.png" alt="Brief" className="w-full h-full object-contain" />
+                            </div>
                             <h1 className="text-2xl font-semibold text-gray-900">{brief.title}</h1>
                             <Badge className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200">
                                 {brief.status === 'new-invitation' ? 'New Invitation' : brief.status.replace('_', ' ')}

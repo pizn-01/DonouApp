@@ -12,13 +12,19 @@ const DashboardPage = () => {
         return null; // ProtectedRoute handles this
     }
 
-    // Role-based redirection
-    if (user.role === 'manufacturer') {
+    // Role-based redirection - ensure role value is normalized to lowercase
+    const userRole = user.role?.toLowerCase() || '';
+    
+    if (userRole === 'manufacturer') {
         return <Navigate to="/manufacturer/dashboard" replace />;
     }
 
-    // Default to Brand Dashboard
-    return <Navigate to="/brand/dashboard" replace />;
+    if (userRole === 'brand') {
+        return <Navigate to="/brand/dashboard" replace />;
+    }
+
+    // Fallback - unknown role
+    return <div className="flex h-screen items-center justify-center">Invalid user role</div>;
 };
 
 export default DashboardPage;
