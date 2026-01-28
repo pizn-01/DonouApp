@@ -20,7 +20,7 @@ export class ProposalController {
             const { data: manu } = await supabase
                 .from('manufacturer_profiles')
                 .select('id')
-                .eq('user_id', user.id)
+                .eq('user_id', user.userId)
                 .single();
 
             if (!manu) {
@@ -50,7 +50,7 @@ export class ProposalController {
             const { data: brand } = await supabase
                 .from('brand_profiles')
                 .select('id')
-                .eq('user_id', user.id)
+                .eq('user_id', user.userId)
                 .single();
 
             if (!brand) return res.status(403).json({ success: false, message: 'Brand access required' });
@@ -73,7 +73,7 @@ export class ProposalController {
             const { data: manu } = await supabase
                 .from('manufacturer_profiles')
                 .select('id')
-                .eq('user_id', user.id)
+                .eq('user_id', user.userId)
                 .single();
 
             if (!manu) return res.status(403).json({ success: false, message: 'Manufacturer access required' });
@@ -99,7 +99,7 @@ export class ProposalController {
             const { data: brand } = await supabase
                 .from('brand_profiles')
                 .select('id')
-                .eq('user_id', user.id)
+                .eq('user_id', user.userId)
                 .single();
 
             if (!brand) return res.status(403).json({ success: false, message: 'Brand access required' });

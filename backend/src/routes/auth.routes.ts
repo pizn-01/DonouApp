@@ -36,7 +36,7 @@ router.get('/me', authenticate, (req, res, next) => authController.me(req, res, 
  * @desc    Refresh access token
  * @access  Private
  */
-router.post('/refresh', authenticate, (req, res, next) => authController.refresh(req, res, next));
+router.post('/refresh', (req, res, next) => authController.refresh(req, res, next));
 
 /**
  * @route   POST /api/auth/logout

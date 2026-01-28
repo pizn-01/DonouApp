@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { UserRole } from '../types/auth.types';
+import { Response, NextFunction } from 'express';
+import { AuthenticatedRequest } from '../types/express.types';
 
 // =============================================
 // Role Guard Middleware
@@ -9,7 +9,7 @@ import { UserRole } from '../types/auth.types';
  * Middleware to ensure user has Brand role
  */
 export const requireBrand = (
-    req: Request,
+    req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
 ): void => {
@@ -38,7 +38,7 @@ export const requireBrand = (
  * Middleware to ensure user has Manufacturer role
  */
 export const requireManufacturer = (
-    req: Request,
+    req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
 ): void => {
@@ -67,7 +67,7 @@ export const requireManufacturer = (
  * Middleware to ensure user has either Brand or Manufacturer role
  */
 export const requireAuthenticated = (
-    req: Request,
+    req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
 ): void => {

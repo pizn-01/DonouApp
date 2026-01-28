@@ -40,11 +40,11 @@ ensureUploadDir();
 // =============================================
 
 const storage = multer.diskStorage({
-    destination: async (req, file, cb) => {
+    destination: async (_req, _file, cb) => {
         await ensureUploadDir();
         cb(null, UPLOAD_DIR);
     },
-    filename: (req, file, cb) => {
+    filename: (_req, file, cb) => {
         // Generate unique filename: timestamp-uuid-originalname
         const timestamp = Date.now();
         const randomString = Math.random().toString(36).substring(2, 15);
@@ -63,7 +63,7 @@ const storage = multer.diskStorage({
 // =============================================
 
 const fileFilter = (
-    req: Request,
+    _req: Request,
     file: Express.Multer.File,
     cb: multer.FileFilterCallback
 ) => {

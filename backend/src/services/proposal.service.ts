@@ -190,12 +190,6 @@ export class ProposalService {
             // C. Create Initial Project Update (Milestone)
             await projectService.createUpdate(
                 brief.id,
-                manufacturerUserId, // Author? Or Brand? Let's say Manufacturer starts it, or System.
-                // Actually author_id refers to auth users. We don't have system user easily.
-                // Let's use the Brand Owner (current user) as author of the 'Project Started' update.
-                // But wait, createUpdate takes authorId.
-                // We'll use the Brand (who accepted it).
-                // Or just use the manufacturer ID since they are the ones doing the work.
                 manufacturerUserId || '',
                 "Project started! Proposal accepted.",
                 "MILESTONE"

@@ -21,16 +21,17 @@ export class BriefController {
      */
     async create(req: AuthenticatedRequest, res: Response): Promise<void> {
         try {
-            // Validate request body
-            const { error, value } = validateBriefCreate.validate(req.body);
-            if (error) {
+            // Validate request body using Zod
+            const result = validateBriefCreate.safeParse(req.body);
+            if (!result.success) {
                 res.status(400).json({
                     success: false,
                     message: 'Validation error',
-                    errors: error.details.map(d => d.message)
+                    errors: result.error.errors.map(e => e.message)
                 });
                 return;
             }
+            const value = result.data;
 
             const user = req.user!;
 
@@ -39,7 +40,7 @@ export class BriefController {
             const { data: brandProfile } = await supabase
                 .from('brand_profiles')
                 .select('id')
-                .eq('user_id', user.id)
+                .eq('user_id', user.userId)
                 .single();
 
             if (!brandProfile) {
@@ -72,26 +73,26 @@ export class BriefController {
      */
     async getAll(req: AuthenticatedRequest, res: Response): Promise<void> {
         try {
-            // Validate query parameters
-            const { error, value } = validateBriefFilters.validate(req.query);
-            if (error) {
+            // Validate query parameters using Zod
+            const result = validateBriefFilters.safeParse(req.query);
+            if (!result.success) {
                 res.status(400).json({
                     success: false,
                     message: 'Validation error',
-                    errors: error.details.map(d => d.message)
+                    errors: result.error.errors.map(e => e.message)
                 });
                 return;
             }
 
             const user = req.user!;
-            const filters: BriefFilters = value;
+            const filters = result.data as BriefFilters;
 
-            const result = await briefService.getBriefs(user.id, user.role, filters);
+            const briefsResult = await briefService.getBriefs(user.userId, user.role, filters);
 
             res.json({
                 success: true,
-                data: result.data,
-                pagination: result.pagination
+                data: briefsResult.data,
+                pagination: briefsResult.pagination
             });
         } catch (error: any) {
             res.status(500).json({
@@ -108,17 +109,19 @@ export class BriefController {
     async getStats(req: AuthenticatedRequest, res: Response): Promise<void> {
         try {
             const user = req.user!;
+            console.log('[BriefController.getStats] User:', { userId: user.userId, role: user.role });
 
             // Get brand profile ID
             const { supabase } = await import('../config/database');
-            const { data: brandProfile } = await supabase
+            const { data: brandProfile, error } = await supabase
                 .from('brand_profiles')
                 .select('id')
-                .eq('user_id', user.id)
+                .eq('user_id', user.userId)
                 .single();
 
-            // If no brand profile exists yet, return empty stats
-            if (!brandProfile) {
+            if (error || !brandProfile) {
+                console.warn('[BriefController.getStats] Brand profile not found for user:', user.userId, 'Returning empty stats.');
+                // Return empty stats instead of 404 to prevent dashboard crash
                 res.json({
                     success: true,
                     data: {
@@ -131,6 +134,8 @@ export class BriefController {
                 return;
             }
 
+            console.log('[BriefController.getStats] Found Brand Profile:', brandProfile.id);
+
             const stats = await briefService.getBrandStats(brandProfile.id);
 
             res.json({
@@ -138,6 +143,7 @@ export class BriefController {
                 data: stats
             });
         } catch (error: any) {
+            console.error('[BriefController.getStats] Error:', error);
             res.status(500).json({
                 success: false,
                 message: error.message || 'Failed to fetch statistics'
@@ -154,7 +160,7 @@ export class BriefController {
             const { id } = req.params;
             const user = req.user!;
 
-            const brief = await briefService.getBriefById(id, user.id, user.role);
+            const brief = await briefService.getBriefById(id, user.userId, user.role);
 
             res.json({
                 success: true,
@@ -177,13 +183,13 @@ export class BriefController {
         try {
             const { id } = req.params;
 
-            // Validate request body
-            const { error, value } = validateBriefUpdate.validate(req.body);
-            if (error) {
+            // Validate request body using Zod
+            const result = validateBriefUpdate.safeParse(req.body);
+            if (!result.success) {
                 res.status(400).json({
                     success: false,
                     message: 'Validation error',
-                    errors: error.details.map(d => d.message)
+                    errors: result.error.errors.map(e => e.message)
                 });
                 return;
             }
@@ -195,7 +201,7 @@ export class BriefController {
             const { data: brandProfile } = await supabase
                 .from('brand_profiles')
                 .select('id')
-                .eq('user_id', user.id)
+                .eq('user_id', user.userId)
                 .single();
 
             if (!brandProfile) {
@@ -206,7 +212,7 @@ export class BriefController {
                 return;
             }
 
-            const updateData: BriefUpdateDTO = value;
+            const updateData = result.data as BriefUpdateDTO;
             const brief = await briefService.updateBrief(id, brandProfile.id, updateData);
 
             res.json({
@@ -238,7 +244,7 @@ export class BriefController {
             const { data: brandProfile } = await supabase
                 .from('brand_profiles')
                 .select('id')
-                .eq('user_id', user.id)
+                .eq('user_id', user.userId)
                 .single();
 
             if (!brandProfile) {

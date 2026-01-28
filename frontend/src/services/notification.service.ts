@@ -1,6 +1,5 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:3000/api';
+import { apiClient } from '@/lib/apiClient';
+// import { API_ENDPOINTS } from '@/config/api';
 
 export interface Notification {
     id: string;
@@ -13,31 +12,24 @@ export interface Notification {
 }
 
 class NotificationService {
-    private getHeaders() {
-        const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
-        return {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        };
-    }
-
     async getMyNotifications(): Promise<Notification[]> {
-        const response = await axios.get(`${API_URL}/notifications`, {
-            headers: this.getHeaders(),
-        });
+        // Assuming API_ENDPOINTS.NOTIFICATIONS exists or we construct it.
+        // It wasn't in api.ts previously, but checking earlier file read of api.ts...
+        // api.ts only had AUTH, ONBOARDING, BRIEFS, PROPOSALS, DASHBOARD, HEALTH.
+        // So we should construct the URL or add it to api.ts.
+        // I'll construct it using API_BASE_URL (which needs to be imported if we use it)
+        // Or better, just use string literal '/notifications' relative to baseURL if apiClient supports it?
+        // apiClient has baseURL set. So we can just use '/notifications'.
+        const response = await apiClient.get('/notifications');
         return response.data.data;
     }
 
     async markAsRead(id: string): Promise<void> {
-        await axios.patch(`${API_URL}/notifications/${id}/read`, {}, {
-            headers: this.getHeaders(),
-        });
+        await apiClient.patch(`/notifications/${id}/read`);
     }
 
     async markAllAsRead(): Promise<void> {
-        await axios.patch(`${API_URL}/notifications/read-all`, {}, {
-            headers: this.getHeaders(),
-        });
+        await apiClient.patch('/notifications/read-all');
     }
 }
 

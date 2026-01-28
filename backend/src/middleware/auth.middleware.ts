@@ -43,6 +43,8 @@ export async function authenticate(
                 full_name: userWithDetails.full_name,
                 phone: userWithDetails.phone,
                 avatar_url: userWithDetails.avatar_url,
+                onboarding_completed: userWithDetails.onboarding_completed,
+                onboarding_completed_at: userWithDetails.onboarding_completed_at,
                 created_at: userWithDetails.created_at,
                 updated_at: userWithDetails.updated_at,
                 deleted_at: userWithDetails.deleted_at,

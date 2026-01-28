@@ -35,21 +35,19 @@ apiClient.interceptors.response.use(
             originalRequest._retry = true;
 
             try {
-                // Get the current access token (which might be expired)
-                const currentToken = localStorage.getItem('accessToken');
+                // Get the refresh token
+                const refreshToken = localStorage.getItem('refreshToken');
 
-                if (!currentToken) {
-                    throw new Error('No token available');
+                if (!refreshToken) {
+                    throw new Error('No refresh token available');
                 }
 
                 // Try to refresh the token
                 const response = await apiClient.post(
                     API_ENDPOINTS.AUTH.REFRESH,
-                    {},
+                    { refreshToken }, // Send refresh token in body
                     {
-                        headers: {
-                            Authorization: `Bearer ${currentToken}`,
-                        },
+                        // No Authorization header needed for this endpoint
                     }
                 );
 

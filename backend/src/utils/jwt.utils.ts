@@ -16,9 +16,10 @@ export function generateAccessToken(userId: string, email: string, role: UserRol
         role,
     };
 
+    // Use type assertion to bypass strict type checking on expiresIn
     return jwt.sign(payload, env.JWT_SECRET, {
-        expiresIn: env.JWT_EXPIRES_IN,
-    });
+        expiresIn: env.JWT_EXPIRES_IN
+    } as jwt.SignOptions);
 }
 
 /**
@@ -31,9 +32,10 @@ export function generateRefreshToken(userId: string): string {
         userId,
     };
 
+    // Use type assertion to bypass strict type checking on expiresIn
     return jwt.sign(payload, env.JWT_SECRET, {
-        expiresIn: env.JWT_REFRESH_EXPIRES_IN,
-    });
+        expiresIn: env.JWT_REFRESH_EXPIRES_IN
+    } as jwt.SignOptions);
 }
 
 /**

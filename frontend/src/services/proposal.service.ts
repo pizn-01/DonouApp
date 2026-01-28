@@ -1,6 +1,5 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+import { apiClient } from '@/lib/apiClient';
+import { API_ENDPOINTS } from '@/config/api';
 
 export interface ProposalDTO {
     brief_id: string;
@@ -12,34 +11,30 @@ export interface ProposalDTO {
 
 export const proposalService = {
     async create(data: ProposalDTO) {
-        const token = localStorage.getItem('token');
-        const response = await axios.post(`${API_URL}/proposals`, data, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await apiClient.post(API_ENDPOINTS.PROPOSALS.BASE, data);
         return response.data;
     },
 
     async getMyProposals() {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`${API_URL}/proposals/my-proposals`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await apiClient.get(`${API_ENDPOINTS.PROPOSALS.BASE}/my-proposals`);
         return response.data;
     },
 
     async getForBrief(briefId: string) {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`${API_URL}/briefs/${briefId}/proposals`, {
-            headers: { Authorization: `Bearer ${token}` } // Only Brand can access this usually
-        });
+        // API_ENDPOINTS.PROPOSALS doesn't have BY_BRIEF usually, checking api.ts...
+        // api.ts: PROPOSALS: { BASE: ..., BY_ID: ... }
+        // The backend route is /api/briefs/:id/proposals usually?
+        // Let's check proposal.controller/routes or just use the old URL logic relative to base.
+        // Old logic: `${API_URL}/briefs/${briefId}/proposals`
+        const response = await apiClient.get(`${API_ENDPOINTS.BRIEFS.BY_ID(briefId)}/proposals`);
         return response.data;
     },
 
     async updateStatus(id: string, status: string, rejectionReason?: string) {
-        const token = localStorage.getItem('token');
-        const response = await axios.patch(`${API_URL}/proposals/${id}/status`, { status, rejection_reason: rejectionReason }, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await apiClient.patch(
+            `${API_ENDPOINTS.PROPOSALS.BY_ID(id)}/status`,
+            { status, rejection_reason: rejectionReason }
+        );
         return response.data;
     }
 };

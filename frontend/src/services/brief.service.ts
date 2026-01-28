@@ -1,6 +1,5 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:3000/api';
+import { apiClient } from '@/lib/apiClient';
+import { API_ENDPOINTS } from '@/config/api';
 
 export enum BriefStatus {
     DRAFT = 'draft',
@@ -56,14 +55,6 @@ export interface PaginatedResponse<T> {
 }
 
 class BriefService {
-    private getHeaders() {
-        const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
-        return {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        };
-    }
-
     async getAll(filters: BriefFilters = {}): Promise<PaginatedResponse<Brief>> {
         const params = new URLSearchParams();
         if (filters.status) params.append('status', filters.status);
@@ -71,44 +62,36 @@ class BriefService {
         if (filters.limit) params.append('limit', filters.limit.toString());
         if (filters.search) params.append('search', filters.search);
 
-        const response = await axios.get(`${API_URL}/briefs?${params.toString()}`, {
-            headers: this.getHeaders(),
-        });
+        const response = await apiClient.get(`${API_ENDPOINTS.BRIEFS.BASE}?${params.toString()}`);
         return response.data;
     }
 
     async getById(id: string): Promise<Brief> {
-        const response = await axios.get(`${API_URL}/briefs/${id}`, {
-            headers: this.getHeaders(),
-        });
+        const response = await apiClient.get(API_ENDPOINTS.BRIEFS.BY_ID(id));
         return response.data.data;
     }
 
     async create(data: Partial<Brief>): Promise<Brief> {
-        const response = await axios.post(`${API_URL}/briefs`, data, {
-            headers: this.getHeaders(),
-        });
+        const response = await apiClient.post(API_ENDPOINTS.BRIEFS.BASE, data);
         return response.data.data;
     }
 
     async update(id: string, data: Partial<Brief>): Promise<Brief> {
-        const response = await axios.patch(`${API_URL}/briefs/${id}`, data, {
-            headers: this.getHeaders(),
-        });
+        const response = await apiClient.patch(API_ENDPOINTS.BRIEFS.BY_ID(id), data);
         return response.data.data;
     }
 
     async delete(id: string): Promise<void> {
-        await axios.delete(`${API_URL}/briefs/${id}`, {
-            headers: this.getHeaders(),
-        });
+        await apiClient.delete(API_ENDPOINTS.BRIEFS.BY_ID(id));
     }
 
     // Helper to get dashboard stats efficiently
     async getBrandStats() {
-        const response = await axios.get(`${API_URL}/briefs/stats`, {
-            headers: this.getHeaders(),
-        });
+        // We use the configured configured endpoint if available, or fallback to the known path
+        // Checking config/api.ts again, DASHBOARD.STATS is /dashboard/stats, but user reported /briefs/stats
+        // And backend route IS /briefs/stats. So we should use that.
+        // It's not in API_ENDPOINTS.BRIEFS explicitly as STATS, so we construct it.
+        const response = await apiClient.get(`${API_ENDPOINTS.BRIEFS.BASE}/stats`);
         return response.data.data;
     }
 }

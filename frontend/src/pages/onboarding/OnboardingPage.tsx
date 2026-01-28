@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -10,10 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { AuthLayout } from "@/components/layout/AuthLayout";
 import type { User } from "@/features/auth/types";
-import axios from "axios";
-import { authService } from '@/services/auth.service';
-
-const API_URL = "http://localhost:3000/api";
+import { authService, onboardingService } from '@/services/auth.service';
 
 // Brand Schema
 const brandSchema = z.object({
@@ -34,7 +30,6 @@ const manufacturerSchema = z.object({
 });
 
 export default function OnboardingPage() {
-    const navigate = useNavigate();
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
@@ -93,9 +88,7 @@ export default function OnboardingPage() {
                 website: data.website,
             };
 
-            await axios.post(`${API_URL}/onboarding/brand`, payload, {
-                headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` }
-            });
+            await onboardingService.completeBrandOnboarding(payload);
             handleSuccess();
         } catch (err: unknown) {
             const errorMessage = err instanceof Error ? err.message : "Failed to save profile.";
@@ -115,7 +108,6 @@ export default function OnboardingPage() {
                 company_name: data.businessName,
                 factory_location: data.location,
                 production_capacity: data.productionCapacity,
-                min_order_quantity: data.minimumOrderQuantity === "" ? undefined : Number(data.minimumOrderQuantity),
                 capabilities: data.capabilities ? data.capabilities.split(',').map((s: string) => {
                     const trimmed = s.trim();
                     return {
@@ -128,9 +120,7 @@ export default function OnboardingPage() {
                 })) : [],
             };
 
-            await axios.post(`${API_URL}/onboarding/manufacturer`, payload, {
-                headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` }
-            });
+            await onboardingService.completeManufacturerOnboarding(payload);
             handleSuccess();
         } catch (err: unknown) {
             const errorMessage = err instanceof Error ? err.message : "Failed to save profile.";

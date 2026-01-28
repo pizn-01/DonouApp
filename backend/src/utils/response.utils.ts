@@ -51,8 +51,8 @@ export function error(
 /**
  * Send bad request response (400)
  */
-export function badRequest(res: Response, message: string, error?: string): Response {
-    return this.error(res, message, 400, error);
+export function badRequest(res: Response, message: string, errorDetail?: string): Response {
+    return error(res, message, 400, errorDetail);
 }
 
 /**

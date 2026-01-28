@@ -1,143 +1,112 @@
--- Phase 5: Messaging, Notifications & Active Pipeline
+-- Phase 5: Messaging Enhancements, Notifications & Active Pipeline
+-- NOTE: conversations and messages tables already exist in initial_schema
+-- This migration adds new columns and creates additional Phase 5 tables
 
--- 1. Conversations
-CREATE TABLE conversations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  brief_id UUID REFERENCES briefs(id),
-  manufacturer_id UUID REFERENCES manufacturer_profiles(id),
-  brand_id UUID REFERENCES brand_profiles(id),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+-- =============================================
+-- 1. ADD NEW COLUMNS TO EXISTING CONVERSATIONS TABLE
+-- =============================================
+-- Add direct brand/manufacturer references for easier lookups
+ALTER TABLE conversations 
+  ADD COLUMN IF NOT EXISTS brief_id UUID REFERENCES briefs(id),
+  ADD COLUMN IF NOT EXISTS manufacturer_id UUID REFERENCES manufacturer_profiles(id),
+  ADD COLUMN IF NOT EXISTS brand_id UUID REFERENCES brand_profiles(id);
 
--- RLS for conversations
-ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
+-- Create indexes for the new columns
+CREATE INDEX IF NOT EXISTS idx_conversations_brief ON conversations(brief_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_manufacturer ON conversations(manufacturer_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_brand ON conversations(brand_id);
 
-CREATE POLICY "Users can view conversations they are part of"
-ON conversations FOR SELECT
-USING (
-  auth.uid() IN (
-    SELECT user_id FROM brand_profiles WHERE id = brand_id
-    UNION
-    SELECT user_id FROM manufacturer_profiles WHERE id = manufacturer_id
-  )
-);
+-- =============================================
+-- 2. ADD NEW COLUMNS TO EXISTING MESSAGES TABLE
+-- =============================================
+ALTER TABLE messages
+  ADD COLUMN IF NOT EXISTS is_ai_generated BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT FALSE;
 
-CREATE POLICY "Users can create conversations they are part of"
-ON conversations FOR INSERT
-WITH CHECK (
-  auth.uid() IN (
-    SELECT user_id FROM brand_profiles WHERE id = brand_id
-    UNION
-    SELECT user_id FROM manufacturer_profiles WHERE id = manufacturer_id
-  )
-);
-
--- 2. Messages
-CREATE TABLE messages (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE,
-  sender_id UUID REFERENCES auth.users(id),
-  content TEXT NOT NULL,
-  is_ai_generated BOOLEAN DEFAULT FALSE,
-  is_read BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- RLS for messages
-ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view messages in their conversations"
-ON messages FOR SELECT
-USING (
-  conversation_id IN (
-    SELECT id FROM conversations WHERE 
-      auth.uid() IN (
-        SELECT user_id FROM brand_profiles WHERE id = brand_id
-        UNION
-        SELECT user_id FROM manufacturer_profiles WHERE id = manufacturer_id
-      )
-  )
-);
-
-CREATE POLICY "Users can send messages to their conversations"
-ON messages FOR INSERT
-WITH CHECK (
-  sender_id = auth.uid() AND
-  conversation_id IN (
-    SELECT id FROM conversations WHERE 
-      auth.uid() IN (
-        SELECT user_id FROM brand_profiles WHERE id = brand_id
-        UNION
-        SELECT user_id FROM manufacturer_profiles WHERE id = manufacturer_id
-      )
-  )
-);
-
--- 3. Notifications
-CREATE TABLE notifications (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+-- =============================================
+-- 3. NOTIFICATIONS TABLE (NEW)
+-- =============================================
+CREATE TABLE IF NOT EXISTS notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   type VARCHAR(50) NOT NULL, -- 'PROPOSAL_RECEIVED', 'MESSAGE', 'BRIEF_MATCHED', 'PROPOSAL_ACCEPTED'
   title VARCHAR(255) NOT NULL,
   message TEXT NOT NULL,
   data JSONB, -- For links or metadata
   is_read BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(is_read);
+CREATE INDEX IF NOT EXISTS idx_notifications_created ON notifications(created_at DESC);
 
 -- RLS for notifications
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+
+-- Drop policies if they exist (for idempotency)
+DROP POLICY IF EXISTS "Users can view their own notifications" ON notifications;
+DROP POLICY IF EXISTS "Users can update their own notifications" ON notifications;
 
 CREATE POLICY "Users can view their own notifications"
 ON notifications FOR SELECT
 USING (user_id = auth.uid());
 
-CREATE POLICY "Users can update their own notifications (read status)"
+CREATE POLICY "Users can update their own notifications"
 ON notifications FOR UPDATE
 USING (user_id = auth.uid());
 
--- System can insert notifications (bypass RLS or use service key, but for simple app allow insert from authenticated users securely?)
--- Usually notifications are system-generated. For MVP, we might allow triggered inserts via backend service role.
--- But let's add a policy just in case backend runs as effective user for some things.
--- Actually, the backend service uses `service_role` key usually? Or just authenticated user?
--- If backend uses `supabase-js` with service role key, RLS is bypassed. 
--- If backend passes user token, RLS applies. 
--- We'll assume service invocations for notification creation, so no INSERT policy needed for users.
-
--- 4. Project Updates
-CREATE TABLE project_updates (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  brief_id UUID REFERENCES briefs(id) ON DELETE CASCADE,
-  author_id UUID REFERENCES auth.users(id),
+-- =============================================
+-- 4. PROJECT UPDATES TABLE (NEW)
+-- =============================================
+CREATE TABLE IF NOT EXISTS project_updates (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  brief_id UUID NOT NULL REFERENCES briefs(id) ON DELETE CASCADE,
+  author_id UUID NOT NULL REFERENCES auth.users(id),
   content TEXT NOT NULL,
   type VARCHAR(50) NOT NULL, -- 'MILESTONE', 'UPDATE', 'ISSUE'
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE INDEX IF NOT EXISTS idx_project_updates_brief ON project_updates(brief_id);
+CREATE INDEX IF NOT EXISTS idx_project_updates_author ON project_updates(author_id);
+CREATE INDEX IF NOT EXISTS idx_project_updates_created ON project_updates(created_at DESC);
 
 -- RLS for project updates
 ALTER TABLE project_updates ENABLE ROW LEVEL SECURITY;
+
+-- Drop policies if they exist (for idempotency)
+DROP POLICY IF EXISTS "Participants can view project updates" ON project_updates;
+DROP POLICY IF EXISTS "Participants can create project updates" ON project_updates;
 
 CREATE POLICY "Participants can view project updates"
 ON project_updates FOR SELECT
 USING (
   brief_id IN (
-    SELECT id FROM briefs WHERE brand_id IN (SELECT id FROM brand_profiles WHERE user_id = auth.uid()) -- Brand Owner
+    SELECT id FROM briefs WHERE brand_id IN (SELECT id FROM brand_profiles WHERE user_id = auth.uid())
   )
   OR
   brief_id IN (
-      SELECT brief_id FROM proposals WHERE manufacturer_id IN (SELECT id FROM manufacturer_profiles WHERE user_id = auth.uid()) AND status = 'ACCEPTED' -- Accepted Manufacturer
+    SELECT brief_id FROM proposals WHERE manufacturer_id IN (SELECT id FROM manufacturer_profiles WHERE user_id = auth.uid()) AND status = 'accepted'
   )
 );
 
 CREATE POLICY "Participants can create project updates"
 ON project_updates FOR INSERT
 WITH CHECK (
-  brief_id IN (
-    SELECT id FROM briefs WHERE brand_id IN (SELECT id FROM brand_profiles WHERE user_id = auth.uid())
-  )
-  OR
-  brief_id IN (
-      SELECT brief_id FROM proposals WHERE manufacturer_id IN (SELECT id FROM manufacturer_profiles WHERE user_id = auth.uid()) AND status = 'ACCEPTED'
+  author_id = auth.uid() AND (
+    brief_id IN (
+      SELECT id FROM briefs WHERE brand_id IN (SELECT id FROM brand_profiles WHERE user_id = auth.uid())
+    )
+    OR
+    brief_id IN (
+      SELECT brief_id FROM proposals WHERE manufacturer_id IN (SELECT id FROM manufacturer_profiles WHERE user_id = auth.uid()) AND status = 'accepted'
+    )
   )
 );
+
+-- =============================================
+-- COMMENTS
+-- =============================================
+COMMENT ON TABLE notifications IS 'User notifications for system events';
+COMMENT ON TABLE project_updates IS 'Updates and milestones for active projects';

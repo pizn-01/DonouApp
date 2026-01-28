@@ -10,7 +10,7 @@ export class MessagingService {
         manufacturerId: string
     ) {
         // Check if exists
-        const { data: existing, error: findError } = await supabase
+        const { data: existing, error: _findError } = await supabase
             .from('conversations')
             .select('id')
             .eq('brief_id', briefId)
@@ -122,7 +122,7 @@ export class MessagingService {
     /**
      * Mock AI Response
      */
-    private async handleAiResponse(conversationId: string, userContent: string) {
+    private async handleAiResponse(_conversationId: string, userContent: string) {
         // Simulate delay
         setTimeout(async () => {
             const aiReply = `[AI Assistant]: I noticed you asked "${userContent}". Here is a suggestion based on the brief details...`;

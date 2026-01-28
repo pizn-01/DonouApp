@@ -39,7 +39,7 @@ export class MatchingController {
                     const { data: manu } = await supabase
                         .from('manufacturer_profiles')
                         .select('id')
-                        .eq('user_id', user.id)
+                        .eq('user_id', user.userId)
                         .single();
 
                     if (!manu) return res.status(404).json({ success: false, message: 'Manufacturer profile not found' });

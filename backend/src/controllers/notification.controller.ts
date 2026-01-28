@@ -9,7 +9,7 @@ export class NotificationController {
      */
     async getMyNotifications(req: AuthenticatedRequest, res: Response): Promise<void> {
         try {
-            const userId = req.user!.id;
+            const userId = req.user!.userId;
             const notifications = await notificationService.getUserNotifications(userId);
             res.json({ success: true, data: notifications });
         } catch (error: any) {
@@ -23,7 +23,7 @@ export class NotificationController {
      */
     async markAsRead(req: AuthenticatedRequest, res: Response): Promise<void> {
         try {
-            const userId = req.user!.id;
+            const userId = req.user!.userId;
             const { id } = req.params;
             await notificationService.markAsRead(id, userId);
             res.json({ success: true, message: 'Marked as read' });
@@ -38,7 +38,7 @@ export class NotificationController {
      */
     async markAllAsRead(req: AuthenticatedRequest, res: Response): Promise<void> {
         try {
-            const userId = req.user!.id;
+            const userId = req.user!.userId;
             await notificationService.markAllAsRead(userId);
             res.json({ success: true, message: 'All marked as read' });
         } catch (error: any) {

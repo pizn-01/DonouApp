@@ -18,18 +18,18 @@ export class AiController {
      */
     async generateBrief(req: AuthenticatedRequest, res: Response): Promise<void> {
         try {
-            // Validate request body
-            const { error, value } = validateAiPrompt.validate(req.body);
-            if (error) {
+            // Validate request body using Zod
+            const result = validateAiPrompt.safeParse(req.body);
+            if (!result.success) {
                 res.status(400).json({
                     success: false,
                     message: 'Validation error',
-                    errors: error.details.map(d => d.message)
+                    errors: result.error.errors.map(e => e.message)
                 });
                 return;
             }
 
-            const { prompt } = value;
+            const { prompt } = result.data;
             const user = req.user!;
 
             // Generate brief using AI

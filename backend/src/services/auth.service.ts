@@ -3,11 +3,9 @@ import {
     SignupRequest,
     LoginRequest,
     AuthResponse,
-    UserProfile,
     UserWithDetails,
 } from '../types/auth.types';
-import { hashPassword, comparePassword } from '../utils/password.utils';
-import { generateAccessToken, generateRefreshToken } from '../utils/jwt.utils';
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt.utils';
 
 export class AuthService {
     /**
@@ -16,14 +14,11 @@ export class AuthService {
     async signup(data: SignupRequest): Promise<AuthResponse> {
         const { email, password, full_name, role, phone } = data;
 
-        // Check if user already exists
-        const { data: existingUser } = await supabase
-            .from('user_profiles')
-            .select('user_id')
-            .eq('user_id', email)
-            .single();
+        // Check if user already exists using Supabase Auth admin API
+        const { data: authUsers } = await supabase.auth.admin.listUsers();
+        const emailExists = authUsers?.users?.some(u => u.email?.toLowerCase() === email.toLowerCase());
 
-        if (existingUser) {
+        if (emailExists) {
             throw new Error('User with this email already exists');
         }
 
@@ -166,7 +161,11 @@ export class AuthService {
     /**
      * Refresh access token
      */
-    async refreshAccessToken(userId: string): Promise<string> {
+    async refreshAccessToken(token: string): Promise<string> {
+        // Verify refresh token
+        const decoded = verifyRefreshToken(token);
+        const userId = decoded.userId;
+
         // Get user profile to include in new token
         const { data: profile, error } = await supabase
             .from('user_profiles')
@@ -191,7 +190,7 @@ export class AuthService {
     /**
      * Logout user (handled client-side by removing tokens)
      */
-    async logout(userId: string): Promise<void> {
+    async logout(_userId: string): Promise<void> {
         // In a production app, you might want to:
         // - Invalidate refresh tokens in database
         // - Add tokens to a blocklist
