@@ -8,10 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { loginSchema, type LoginInput } from "./types";
-import axios from "axios";
-
-// Helper for API base - should go in lib/api.ts later
-const API_URL = "http://localhost:3000/api";
+import { authService } from "@/services/auth.service";
 
 export function LoginForm() {
     const navigate = useNavigate();
@@ -32,15 +29,14 @@ export function LoginForm() {
         setError("");
 
         try {
-            const response = await axios.post(`${API_URL}/auth/login`, data);
-
-            // Store tokens using consistent key names
-            localStorage.setItem('accessToken', response.data.data.accessToken);
-            localStorage.setItem('refreshToken', response.data.data.refreshToken);
-            localStorage.setItem('user', JSON.stringify(response.data.data.user));
+            await authService.login({
+                email: data.email,
+                password: data.password
+            });
 
             navigate("/dashboard");
         } catch (err: any) {
+            console.error("Login error:", err.response?.data || err.message);
             setError(err.response?.data?.message || "Invalid credentials. Please try again.");
         } finally {
             setIsLoading(false);

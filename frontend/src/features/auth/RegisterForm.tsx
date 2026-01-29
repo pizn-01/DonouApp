@@ -9,9 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { registerSchema, type RegisterInput } from "./types";
 import { cn } from "@/lib/utils";
-import axios from "axios";
-
-const API_URL = "http://localhost:3000/api";
+import { authService } from "@/services/auth.service";
 
 export function RegisterForm() {
     const navigate = useNavigate();
@@ -46,14 +44,13 @@ export function RegisterForm() {
                 password: data.password,
                 full_name: `${data.firstName} ${data.lastName}`,
                 role: data.role.toLowerCase() as "brand" | "manufacturer",
-                // Optional: you might want to store companyName separately via onboarding later
             };
 
             console.log("Sending registration data:", registerData);
-            await axios.post(`${API_URL}/auth/signup`, registerData);
+            await authService.signup(registerData);
             navigate("/auth/login");
         } catch (err: any) {
-            console.error("Registration error:", err.response?.data);
+            console.error("Registration error:", err.response?.data || err.message);
             const errorMsg = err.response?.data?.message || err.response?.data?.error || "Registration failed. Please try again.";
             setError(errorMsg);
         } finally {

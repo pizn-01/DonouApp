@@ -1,22 +1,44 @@
 import axios, { AxiosError } from 'axios';
-import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
+import { API_ENDPOINTS } from '../config/api';
 
-// Create axios instance with default config
+// Don't set baseURL at module load time - compute it dynamically
 export const apiClient = axios.create({
-    baseURL: API_BASE_URL,
     withCredentials: false, // Not using cookies, using JWT in headers
     headers: {
         'Content-Type': 'application/json',
     },
 });
 
-// Request interceptor to add access token from localStorage
+// Request interceptor to:
+// 1. Add base URL dynamically
+// 2. Add access token from localStorage
 apiClient.interceptors.request.use(
     (config) => {
+        // Dynamically compute the base URL (handles cases where it needs window)
+        const baseURL = (() => {
+            const envUrl = import.meta.env.VITE_API_URL;
+            if (envUrl) return envUrl;
+
+            const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+            if (hostname && !hostname.includes('localhost') && !hostname.includes('127.0.0.1')) {
+                return 'https://donou-backend.vercel.app/api';
+            }
+
+            return 'http://localhost:3000/api';
+        })();
+
+        // If the URL is relative, prepend the base URL
+        if (config.url && !config.url.startsWith('http')) {
+            config.url = `${baseURL}${config.url}`;
+        }
+
+        // Add auth token
         const token = localStorage.getItem('accessToken');
         if (token && !config.headers.Authorization) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+
+        console.log('[apiClient] Request:', config.method?.toUpperCase(), config.url);
         return config;
     },
     (error) => {
