@@ -1,5 +1,20 @@
 // API Configuration
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const getBaseUrl = () => {
+    // 1. Prefer Environment Variable (Vite/Vercel)
+    if (import.meta.env.VITE_API_URL) {
+        return import.meta.env.VITE_API_URL;
+    }
+
+    // 2. Smart Fallback for Vercel Deployments (Client-side check)
+    if (typeof window !== 'undefined' && window.location.hostname.endsWith('.vercel.app')) {
+        return 'https://donou-backend.vercel.app/api';
+    }
+
+    // 3. Local Development Default
+    return 'http://localhost:3000/api';
+};
+
+export const API_BASE_URL = getBaseUrl();
 
 // API Endpoints
 export const API_ENDPOINTS = {
