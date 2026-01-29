@@ -1,17 +1,33 @@
 // API Configuration
 const getBaseUrl = () => {
-    // 1. Prefer Environment Variable (Vite/Vercel)
-    if (import.meta.env.VITE_API_URL) {
-        return import.meta.env.VITE_API_URL;
+    // 1. Check Environment Variable first
+    const envUrl = import.meta.env.VITE_API_URL;
+    if (envUrl) {
+        console.log('[API Config] Using VITE_API_URL:', envUrl);
+        return envUrl;
     }
 
-    // 2. Smart Fallback for Vercel Deployments (Client-side check)
-    if (typeof window !== 'undefined' && window.location.hostname.endsWith('.vercel.app')) {
-        return 'https://donou-backend.vercel.app/api';
+    // 2. Check if we're in production (Vercel or any deployed environment)
+    const isProduction = import.meta.env.PROD;
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+
+    console.log('[API Config] Environment:', {
+        PROD: isProduction,
+        hostname: hostname,
+        VITE_API_URL: envUrl
+    });
+
+    // If deployed (not localhost), use production backend
+    if (hostname && !hostname.includes('localhost') && !hostname.includes('127.0.0.1')) {
+        const prodUrl = 'https://donou-backend.vercel.app/api';
+        console.log('[API Config] Detected production deployment, using:', prodUrl);
+        return prodUrl;
     }
 
     // 3. Local Development Default
-    return 'http://localhost:3000/api';
+    const localUrl = 'http://localhost:3000/api';
+    console.log('[API Config] Using local development:', localUrl);
+    return localUrl;
 };
 
 export const API_BASE_URL = getBaseUrl();
