@@ -12,22 +12,17 @@ export interface ProposalDTO {
 export const proposalService = {
     async create(data: ProposalDTO) {
         const response = await apiClient.post(API_ENDPOINTS.PROPOSALS.BASE, data);
-        return response.data;
+        return response.data.data;
     },
 
     async getMyProposals() {
         const response = await apiClient.get(`${API_ENDPOINTS.PROPOSALS.BASE}/my-proposals`);
-        return response.data;
+        return response.data.data;
     },
 
     async getForBrief(briefId: string) {
-        // API_ENDPOINTS.PROPOSALS doesn't have BY_BRIEF usually, checking api.ts...
-        // api.ts: PROPOSALS: { BASE: ..., BY_ID: ... }
-        // The backend route is /api/briefs/:id/proposals usually?
-        // Let's check proposal.controller/routes or just use the old URL logic relative to base.
-        // Old logic: `${API_URL}/briefs/${briefId}/proposals`
         const response = await apiClient.get(`${API_ENDPOINTS.BRIEFS.BY_ID(briefId)}/proposals`);
-        return response.data;
+        return response.data.data;
     },
 
     async updateStatus(id: string, status: string, rejectionReason?: string) {
@@ -35,6 +30,6 @@ export const proposalService = {
             `${API_ENDPOINTS.PROPOSALS.BY_ID(id)}/status`,
             { status, rejection_reason: rejectionReason }
         );
-        return response.data;
+        return response.data.data;
     }
 };

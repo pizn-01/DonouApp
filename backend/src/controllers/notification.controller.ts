@@ -10,9 +10,11 @@ export class NotificationController {
     async getMyNotifications(req: AuthenticatedRequest, res: Response): Promise<void> {
         try {
             const userId = req.user!.userId;
+            console.log('[NotificationController.getMyNotifications] Fetching for user:', userId);
             const notifications = await notificationService.getUserNotifications(userId);
             res.json({ success: true, data: notifications });
         } catch (error: any) {
+            console.error('[NotificationController.getMyNotifications] Error:', error);
             res.status(500).json({ success: false, message: error.message });
         }
     }

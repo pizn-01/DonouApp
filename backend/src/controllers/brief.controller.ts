@@ -76,6 +76,7 @@ export class BriefController {
             // Validate query parameters using Zod
             const result = validateBriefFilters.safeParse(req.query);
             if (!result.success) {
+                console.warn('[BriefController.getAll] Validation failed:', result.error.errors);
                 res.status(400).json({
                     success: false,
                     message: 'Validation error',
@@ -86,6 +87,7 @@ export class BriefController {
 
             const user = req.user!;
             const filters = result.data as BriefFilters;
+            console.log('[BriefController.getAll] Fetching for user:', { userId: user.userId, role: user.role, filters });
 
             const briefsResult = await briefService.getBriefs(user.userId, user.role, filters);
 
@@ -95,6 +97,7 @@ export class BriefController {
                 pagination: briefsResult.pagination
             });
         } catch (error: any) {
+            console.error('[BriefController.getAll] Error:', error);
             res.status(500).json({
                 success: false,
                 message: error.message || 'Failed to fetch briefs'

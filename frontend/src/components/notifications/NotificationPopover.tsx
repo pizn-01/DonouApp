@@ -19,8 +19,14 @@ export function NotificationPopover() {
     const fetchNotifications = async () => {
         try {
             const data = await notificationService.getMyNotifications();
-            setNotifications(data);
-            setUnreadCount(data.filter(n => !n.is_read).length);
+            if (Array.isArray(data)) {
+                setNotifications(data);
+                setUnreadCount(data.filter(n => !n.is_read).length);
+            } else {
+                console.warn('[NotificationPopover] Received invalid data format:', data);
+                setNotifications([]);
+                setUnreadCount(0);
+            }
         } catch (err) {
             console.error(err);
         }

@@ -80,7 +80,7 @@ export const validateAiPrompt = z.object({
 
 export const validateBriefFilters = z.object({
     status: z.enum(['draft', 'open', 'matched', 'in_progress', 'completed', 'archived']).optional(),
-    page: z.number().int().min(1).default(1),
-    limit: z.number().int().min(1).max(100).default(10),
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(10),
     search: z.string().trim().max(200).optional()
 });

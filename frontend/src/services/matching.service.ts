@@ -16,6 +16,6 @@ export const matchingService = {
         if (params.manufacturer_id) queryParams.append('manufacturer_id', params.manufacturer_id);
 
         const response = await apiClient.get(`/matches/recommendations?${queryParams.toString()}`);
-        return response.data;
+        return response.data.data;
     }
 };
