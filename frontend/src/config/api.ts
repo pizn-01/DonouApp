@@ -1,73 +1,44 @@
 // API Configuration
-const getBaseUrl = () => {
-    // 1. Check Environment Variable first
-    const envUrl = import.meta.env.VITE_API_URL;
-    if (envUrl) {
-        console.log('[API Config] Using VITE_API_URL:', envUrl);
-        return envUrl;
-    }
+// Note: We use relative paths for Endpoints so apiClient can dynamically prepend the correct Base URL
+// based on the environment (Vercel vs Localhost) at request time.
+export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
-    // 2. Check if we're in production (Vercel or any deployed environment)
-    const isProduction = import.meta.env.PROD;
-    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-
-    console.log('[API Config] Environment:', {
-        PROD: isProduction,
-        hostname: hostname,
-        VITE_API_URL: envUrl
-    });
-
-    // If deployed (not localhost), use production backend
-    if (hostname && !hostname.includes('localhost') && !hostname.includes('127.0.0.1')) {
-        const prodUrl = 'https://donou-backend.vercel.app/api';
-        console.log('[API Config] Detected production deployment, using:', prodUrl);
-        return prodUrl;
-    }
-
-    // 3. Local Development Default
-    const localUrl = 'http://localhost:3000/api';
-    console.log('[API Config] Using local development:', localUrl);
-    return localUrl;
-};
-
-export const API_BASE_URL = getBaseUrl();
-
-// API Endpoints
+// API Endpoints - All relative paths
 export const API_ENDPOINTS = {
     // Auth
     AUTH: {
-        SIGNUP: `${API_BASE_URL}/auth/signup`,
-        LOGIN: `${API_BASE_URL}/auth/login`,
-        LOGOUT: `${API_BASE_URL}/auth/logout`,
-        ME: `${API_BASE_URL}/auth/me`,
-        REFRESH: `${API_BASE_URL}/auth/refresh`,
+        SIGNUP: '/auth/signup',
+        LOGIN: '/auth/login',
+        LOGOUT: '/auth/logout',
+        ME: '/auth/me',
+        REFRESH: '/auth/refresh',
     },
 
     // Onboarding
     ONBOARDING: {
-        BRAND: `${API_BASE_URL}/onboarding/brand`,
-        MANUFACTURER: `${API_BASE_URL}/onboarding/manufacturer`,
-        STATUS: `${API_BASE_URL}/onboarding/status`,
+        BRAND: '/onboarding/brand',
+        MANUFACTURER: '/onboarding/manufacturer',
+        STATUS: '/onboarding/status',
     },
 
     // Briefs
     BRIEFS: {
-        BASE: `${API_BASE_URL}/briefs`,
-        BY_ID: (id: string) => `${API_BASE_URL}/briefs/${id}`,
+        BASE: '/briefs',
+        BY_ID: (id: string) => `/briefs/${id}`,
     },
 
     // Proposals
     PROPOSALS: {
-        BASE: `${API_BASE_URL}/proposals`,
-        BY_ID: (id: string) => `${API_BASE_URL}/proposals/${id}`,
+        BASE: '/proposals',
+        BY_ID: (id: string) => `/proposals/${id}`,
     },
 
     // Dashboard
     DASHBOARD: {
-        STATS: `${API_BASE_URL}/dashboard/stats`,
-        ACTIVITY: `${API_BASE_URL}/dashboard/activity`,
+        STATS: '/dashboard/stats',
+        ACTIVITY: '/dashboard/activity',
     },
 
     // Health check
-    HEALTH: `${API_BASE_URL}/health`,
+    HEALTH: '/health',
 };
