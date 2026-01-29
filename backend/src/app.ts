@@ -14,9 +14,25 @@ app.use(helmet());
 // CORS configuration
 app.use(
     cors({
-        origin: env.NODE_ENV === 'production'
-            ? ['https://yourdomain.com'] // Replace with your frontend URL
-            : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'],
+        origin: (origin, callback) => {
+            // Allow requests with no origin (like mobile apps or curl requests)
+            if (!origin) return callback(null, true);
+
+            // Allow Vercel deployments and localhost
+            if (
+                origin.endsWith('.vercel.app') ||
+                origin.includes('localhost') ||
+                origin.includes('127.0.0.1')
+            ) {
+                return callback(null, true);
+            }
+
+            // Allow custom domains if needed (add them here)
+            // if (origin === 'https://your-custom-domain.com') return callback(null, true);
+
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        },
         credentials: true,
     })
 );
